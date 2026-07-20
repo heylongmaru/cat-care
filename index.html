@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#2c6e7f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐾%3C/text%3E%3C/svg%3E">
+<title>貓咪照護日誌</title>
+<style>
+/* ============================================================
+   design-system.css v1（內嵌）＋ 06-cat-care 專用樣式
+   ============================================================ */
+:root{
+  --ink:#1f2a33; --text:#2a3340; --muted:#6b7683; --line:#dbe1df;
+  --bg:#eef1ef; --card:#ffffff;
+  --accent:#2c6e7f; --accent-soft:#e3eef0;
+  --ok:#2e7d5b; --ok-soft:#e2f0e9;
+  --warn:#b5761a; --warn-soft:#f6ecd9;
+  --danger:#b4453c; --danger-soft:#f4e0dd;
+  --radius:12px; --radius-sm:8px; --radius-lg:14px; --radius-pill:999px;
+  --shadow:0 1px 2px rgba(31,42,51,.06),0 8px 24px rgba(31,42,51,.06);
+  --shadow-hover:0 6px 18px rgba(23,40,58,.08);
+  --wrap:1040px; --wrap-narrow:760px;
+  --font:"PingFang TC","Noto Sans TC","Microsoft JhengHei",-apple-system,system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--font);color:var(--text);background:var(--bg);line-height:1.6;
+  font-size:15px;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;
+  word-break:break-word;overflow-wrap:anywhere}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:18px 14px 110px}
+.eyebrow{font-size:12px;letter-spacing:.16em;color:var(--accent);font-weight:700;text-transform:uppercase}
+h1{font-size:27px;font-weight:800;letter-spacing:-.01em;margin:6px 0 8px;color:var(--ink)}
+h2{font-size:16px;font-weight:800;color:var(--ink);margin:0 0 4px}
+.lede{font-size:14.5px;color:var(--muted);max-width:46ch;line-height:1.6}
+.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
+.muted{color:var(--muted)}
+a{color:var(--accent)}
+header.app{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  padding:6px 2px 12px;border-bottom:2px solid var(--ink);margin-bottom:14px}
+header.app h1{font-size:22px;letter-spacing:.5px;margin:0}
+header.app .sub{color:var(--muted);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
+.tab{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--muted);
+  padding:9px 15px;border-radius:var(--radius-pill);cursor:pointer;font-size:15px;
+  font-weight:700;transition:all .15s;font-family:inherit}
+.tab:hover{border-color:var(--accent);color:var(--accent)}
+.tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+button.btn,.btn{font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;
+  border:1px solid var(--ink);background:var(--ink);color:#fff;padding:10px 18px;
+  border-radius:var(--radius-sm);transition:all .15s}
+.btn:hover{opacity:.9}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.accent{background:var(--accent);border-color:var(--accent)}
+.btn.ok{background:var(--ok);border-color:var(--ok)}
+.btn.warn{background:#fff;border-color:var(--warn);color:var(--warn)}
+.btn.danger{background:#fff;border-color:var(--danger);color:var(--danger)}
+.btn.lg{font-size:17px;padding:13px 26px}
+.btn.sm{font-size:14px;padding:6px 12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+button.icon,.icon{border:1px solid var(--line);background:#fff;color:var(--muted);
+  border-radius:6px;cursor:pointer;padding:4px 9px;font-size:13px;font-family:inherit;transition:all .12s}
+.icon:hover{border-color:var(--accent);color:var(--accent)}
+.icon.danger:hover{border-color:var(--danger);color:var(--danger)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+label.field{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted);font-weight:600}
+input[type=text],input[type=date],input[type=number],input[type=month],input[type=datetime-local],select,textarea{
+  font-family:inherit;font-size:16px;color:var(--text);border:1px solid var(--line);
+  border-radius:var(--radius-sm);padding:9px 11px;background:#fff;min-width:0;max-width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+textarea{min-height:64px;resize:vertical;line-height:1.5;width:100%}
+.tbl-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:12px;color:var(--muted);font-weight:700}
+.chip{display:inline-block;padding:2px 9px;border-radius:var(--radius-pill);font-size:12px;
+  font-weight:600;background:var(--bg);color:var(--muted);border:1px solid var(--line);margin:2px 3px 2px 0}
+.badge{display:inline-block;padding:2px 9px;border-radius:6px;font-size:12px;font-weight:700}
+.badge.auto{background:var(--accent-soft);color:var(--accent)}
+.badge.manual{background:var(--warn-soft);color:var(--warn)}
+.badge.none{background:var(--danger-soft);color:var(--danger)}
+.notice{padding:12px 15px;border:1.5px solid #e2b4b4;background:#fdf2f2;border-radius:11px;
+  color:#c0392b;font-size:13.5px;line-height:1.7;font-weight:600;margin:0 0 16px}
+.dirty{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--warn-soft);
+  border:1px solid #e6d3ad;color:#7a5410;border-radius:var(--radius-sm);
+  padding:10px 14px;font-size:14px;font-weight:600}
+.empty{color:var(--muted);font-size:14px;padding:12px 2px}
+.divider{height:1px;background:var(--line);margin:14px 0}
+.kpi{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:10px}
+.kpi div b{display:block;font-size:22px;color:var(--ink)}
+.kpi div span{font-size:12px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);
+  color:#fff;padding:11px 20px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;
+  box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:80;
+  max-width:88vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.grid{grid-template-columns:1fr}header.app h1{font-size:19px}}
+
+/* ---------- 06-cat-care 專用 ---------- */
+/* 貓咪選擇列 */
+.cat-bar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.cat-chip{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--line);
+  background:var(--card);color:var(--text);padding:7px 14px;border-radius:var(--radius-pill);
+  cursor:pointer;font-size:15px;font-weight:700;font-family:inherit;transition:all .15s}
+.cat-chip .dot{width:12px;height:12px;border-radius:50%;flex:none}
+.cat-chip.active{border-color:var(--ink);background:var(--ink);color:#fff}
+.cat-chip.small{font-size:13.5px;padding:5px 11px}
+
+/* 快速打點大按鈕 */
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.quick-btn{display:flex;flex-direction:column;align-items:center;gap:4px;
+  border:1px solid var(--line);background:var(--card);border-radius:var(--radius-lg);
+  padding:16px 6px 12px;cursor:pointer;font-family:inherit;transition:all .15s;
+  box-shadow:var(--shadow);min-height:84px;justify-content:center}
+.quick-btn:active{transform:scale(.97)}
+.quick-btn:hover{border-color:var(--accent);box-shadow:var(--shadow-hover)}
+.quick-btn .qi{font-size:28px;line-height:1}
+.quick-btn .ql{font-size:14.5px;font-weight:800;color:var(--ink)}
+.quick-btn .qc{font-size:12px;color:var(--muted)}
+@media(max-width:400px){.quick-btn .qi{font-size:24px}.quick-btn{min-height:76px;padding:12px 4px 10px}}
+
+/* 進度條 */
+.meter{margin:10px 0 4px}
+.meter .m-head{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;
+  color:var(--muted);font-weight:600;margin-bottom:5px;gap:8px}
+.meter .m-head b{color:var(--ink);font-size:15px}
+.meter .m-track{height:12px;background:var(--bg);border:1px solid var(--line);
+  border-radius:var(--radius-pill);overflow:hidden}
+.meter .m-fill{height:100%;border-radius:var(--radius-pill);background:var(--accent);
+  transition:width .3s;min-width:2px}
+.meter .m-fill.ok{background:var(--ok)}
+.meter .m-fill.warn{background:var(--warn)}
+.meter .m-note{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* 今日記錄列表 */
+.rec-list{list-style:none;margin:0;padding:0}
+.rec-list li{display:flex;align-items:flex-start;gap:10px;padding:10px 2px;
+  border-bottom:1px solid var(--line)}
+.rec-list li:last-child{border-bottom:none}
+.rec-ico{font-size:20px;line-height:1.3;flex:none;width:28px;text-align:center}
+.rec-main{flex:1;min-width:0}
+.rec-title{font-size:14.5px;font-weight:700;color:var(--ink)}
+.rec-title .rc-cat{font-weight:600;color:var(--muted);font-size:12.5px;margin-left:6px}
+.rec-sub{font-size:13px;color:var(--muted)}
+.rec-sub .abn{color:var(--danger);font-weight:700}
+.rec-time{font-size:12.5px;color:var(--muted);flex:none;padding-top:2px}
+.rec-act{flex:none;display:flex;gap:5px}
+
+/* 底部工具列（手機） */
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);
+  border-top:1px solid var(--line);display:flex;z-index:60;
+  padding-bottom:env(safe-area-inset-bottom)}
+.bottom-nav button{flex:1;border:none;background:none;font-family:inherit;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px 7px;
+  font-size:11.5px;font-weight:700;color:var(--muted)}
+.bottom-nav button .bi{font-size:20px;line-height:1.15}
+.bottom-nav button.active{color:var(--accent)}
+@media(min-width:761px){.bottom-nav{display:none}.wrap{padding-bottom:40px}.toast{bottom:32px}}
+@media(max-width:760px){.tabs{display:none}}
+
+/* 底部彈窗（modal / bottom sheet） */
+.sheet-mask{position:fixed;inset:0;background:rgba(31,42,51,.45);z-index:70;
+  display:none;align-items:flex-end;justify-content:center}
+.sheet-mask.show{display:flex}
+.sheet{background:var(--card);width:100%;max-width:560px;max-height:88vh;max-height:88dvh;overflow-y:auto;
+  border-radius:18px 18px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom));
+  box-shadow:0 -8px 30px rgba(31,42,51,.18)}
+@media(min-width:761px){
+  .sheet-mask{align-items:center;padding:20px}
+  .sheet{border-radius:var(--radius-lg);max-height:86vh}
+}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.sheet-head h2{font-size:18px}
+.sheet-close{border:none;background:var(--bg);color:var(--muted);width:32px;height:32px;
+  border-radius:50%;cursor:pointer;font-size:16px;font-weight:700;flex:none}
+.sheet .sec{margin-bottom:14px}
+.sheet .sec-label{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px}
+
+/* 選項膠囊組 */
+.opt-group{display:flex;gap:7px;flex-wrap:wrap}
+.opt{border:1.5px solid var(--line);background:#fff;color:var(--text);padding:8px 14px;
+  border-radius:var(--radius-pill);cursor:pointer;font-size:14.5px;font-weight:700;
+  font-family:inherit;transition:all .12s;min-height:38px}
+.opt:hover{border-color:var(--accent)}
+.opt.active{border-color:var(--accent);background:var(--accent);color:#fff}
+.opt.ok.active{border-color:var(--ok);background:var(--ok)}
+.opt.warn.active{border-color:var(--warn);background:var(--warn)}
+.opt.danger.active{border-color:var(--danger);background:var(--danger)}
+.opt.sm{font-size:13px;padding:5px 11px;min-height:32px}
+
+/* 便況評分 */
+.score-row{display:flex;gap:5px;flex-wrap:wrap}
+.score-btn{flex:1;min-width:38px;border:1.5px solid var(--line);background:#fff;
+  border-radius:var(--radius-sm);padding:7px 2px;text-align:center;cursor:pointer;font-family:inherit}
+.score-btn b{display:block;font-size:16px;color:var(--ink)}
+.score-btn span{display:block;font-size:10.5px;color:var(--muted);line-height:1.3}
+.score-btn.active{border-color:var(--accent);background:var(--accent-soft)}
+.score-btn.active b{color:var(--accent)}
+
+/* 計算預覽 */
+.calc-preview{background:var(--accent-soft);border-radius:var(--radius-sm);
+  padding:10px 13px;font-size:14px;color:var(--accent);font-weight:700;display:flex;
+  gap:16px;flex-wrap:wrap}
+.calc-preview span{color:var(--ink)}
+
+/* 同步狀態 */
+.sync-pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;
+  padding:3px 11px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--line);
+  background:var(--card);color:var(--muted)}
+.sync-pill .sdot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.sync-pill.on .sdot{background:var(--ok)}
+.sync-pill.pending .sdot{background:var(--warn)}
+.sync-pill.err .sdot{background:var(--danger)}
+
+/* 圖表 */
+.chart-card svg{width:100%;height:auto;display:block}
+.chart-title{font-size:14.5px;font-weight:800;color:var(--ink);margin:0 0 2px}
+.chart-sub{font-size:12.5px;color:var(--muted);margin:0 0 8px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* 報告 */
+.report-body h3{font-size:15px;color:var(--ink);margin:16px 0 6px;border-left:3px solid var(--accent);padding-left:8px}
+.report-body table{font-size:13.5px}
+.report-meta{font-size:13px;color:var(--muted)}
+
+/* 列印 */
+@media print{
+  .tabs,.bottom-nav,.no-print,header.app .sub,.cat-bar,.sync-pill{display:none!important}
+  body{background:#fff}
+  .card{box-shadow:none;border-color:#ccc;break-inside:avoid}
+  .wrap{padding:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="app">
+    <h1>🐾 貓咪照護日誌</h1>
+    <span class="sub">大小便・飲食飲水・體重</span>
+    <span style="flex:1"></span>
+    <button class="sync-pill no-print" id="syncPill" onclick="UI.go('settings');setTimeout(()=>document.getElementById('secSync').scrollIntoView({behavior:'smooth'}),60)">
+      <span class="sdot"></span><span id="syncPillText">未同步</span>
+    </button>
+  </header>
+
+  <nav class="tabs no-print" id="topTabs"></nav>
+
+  <main id="pages">
+    <section id="page-today"></section>
+    <section id="page-history" hidden></section>
+    <section id="page-stats" hidden></section>
+    <section id="page-report" hidden></section>
+    <section id="page-settings" hidden></section>
+  </main>
+</div>
+
+<nav class="bottom-nav no-print" id="bottomNav"></nav>
+
+<div class="sheet-mask" id="sheetMask">
+  <div class="sheet" id="sheetBody" role="dialog" aria-modal="true"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* ============================================================
+   06-cat-care 貓咪照護日誌
+   資料：localStorage（本機）＋可選 Google 試算表同步（Apps Script）
+   ============================================================ */
+
+/* ---------- 常數 ---------- */
+const LS_KEY = 'catcare_v1';
+const REC_TYPES = {
+  poop:  { icon:'💩', label:'大便' },
+  pee:   { icon:'💧', label:'小便' },
+  feed:  { icon:'🍚', label:'餵食' },
+  drink: { icon:'🚰', label:'喝水' },
+  weight:{ icon:'⚖️', label:'體重' },
+  event: { icon:'⚠️', label:'異常/事件' }
+};
+const POOP_SCORES = [
+  {v:1,l:'很硬顆粒'},{v:2,l:'成形偏硬'},{v:3,l:'理想成形'},{v:4,l:'軟但成形'},
+  {v:5,l:'軟糊'},{v:6,l:'糊狀'},{v:7,l:'水狀'}
+];
+const POOP_COLORS = ['正常棕','深棕/黑','偏黃','偏綠','紅（血）','灰白'];
+const EVENT_KINDS = ['嘔吐','食慾差','精神差','吃藥/驅蟲','其他'];
+const FOOD_TYPES = ['乾糧','主食罐','副食罐/餐包','零食','鮮食/自製','處方糧'];
+const DER_FACTORS = [
+  {v:1.0,l:'減重中 ×1.0'},{v:1.2,l:'已絕育成貓 ×1.2'},{v:1.4,l:'未絕育成貓 ×1.4'},
+  {v:1.6,l:'活動量大 ×1.6'},{v:2.5,l:'幼貓(4月內) ×2.5'},{v:2.0,l:'幼貓(4–12月) ×2.0'}
+];
+const CAT_COLORS = ['#2c6e7f','#b5761a','#2e7d5b','#7b5aa6','#b4453c','#4a6fa5'];
+const UNKNOWN_CAT = '__unknown__';
+
+/* ---------- 小工具 ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+const pad2 = n => String(n).padStart(2,'0');
+function dkey(d){ return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+function todayKey(){ return dkey(new Date()); }
+function fmtTime(ts){ const d=new Date(ts); return pad2(d.getHours())+':'+pad2(d.getMinutes()); }
+function fmtDate(k){ const [y,m,d]=k.split('-'); return `${m}/${d}`; }
+function fmtDateFull(k){ const [y,m,d]=k.split('-'); const w='日一二三四五六'[new Date(+y,+m-1,+d).getDay()]; return `${y}/${m}/${d}（${w}）`; }
+function toLocalDT(ts){ const d=new Date(ts); return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+'T'+pad2(d.getHours())+':'+pad2(d.getMinutes()); }
+function round1(x){ return Math.round(x*10)/10; }
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2200); }
+
+/* ---------- 資料層 ---------- */
+const DEFAULT_DB = () => ({
+  version:1,
+  cats:[],            // {id,name,color,birthYM,neutered,derFactor,waterMlPerKg,updatedAt,deleted}
+  foods:[],           // {id,name,type,moisturePct,kcalPer100g,defaultGrams,updatedAt,deleted}
+  records:[],         // {id,catId,ts,type,data:{},updatedAt,deleted}
+  settings:{ syncUrl:'', syncKey:'', deviceName:'', lastPullAt:0, autoSync:true }
+});
+let DB = DEFAULT_DB();
+let PENDING = [];     // 待同步 [{kind,id}]
+
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){ const d = JSON.parse(raw);
+      DB = Object.assign(DEFAULT_DB(), d);
+      DB.settings = Object.assign(DEFAULT_DB().settings, d.settings||{});
+    }
+    PENDING = JSON.parse(localStorage.getItem(LS_KEY+'_pending')||'[]');
+  }catch(e){ console.warn('loadDB', e); }
+}
+function saveDB(){
+  try{
+    localStorage.setItem(LS_KEY, JSON.stringify(DB));
+    localStorage.setItem(LS_KEY+'_pending', JSON.stringify(PENDING));
+  }catch(e){
+    toast('儲存失敗：空間可能已滿，請先到「設定」匯出備份');
+    console.error(e);
+  }
+}
+function markPending(kind,id){
+  if(!PENDING.some(p=>p.kind===kind&&p.id===id)) PENDING.push({kind,id});
+}
+/* 寫入/更新一筆（cats/foods/records 共用），並排入同步 */
+function upsert(kind, obj){
+  obj.updatedAt = Date.now();
+  const arr = DB[kind==='cat'?'cats':kind==='food'?'foods':'records'];
+  const i = arr.findIndex(x=>x.id===obj.id);
+  if(i>=0) arr[i]=obj; else arr.push(obj);
+  markPending(kind, obj.id);
+  saveDB();
+  Sync.schedule();
+}
+function softDelete(kind, id){
+  const arr = DB[kind==='cat'?'cats':kind==='food'?'foods':'records'];
+  const o = arr.find(x=>x.id===id);
+  if(o){ o.deleted=true; o.updatedAt=Date.now(); markPending(kind,id); saveDB(); Sync.schedule(); }
+}
+const liveCats  = () => DB.cats.filter(c=>!c.deleted);
+const liveFoods = () => DB.foods.filter(f=>!f.deleted);
+const liveRecs  = () => DB.records.filter(r=>!r.deleted);
+const catById = id => id===UNKNOWN_CAT ? {id:UNKNOWN_CAT,name:'不確定是誰',color:'#9aa4ad'} : DB.cats.find(c=>c.id===id);
+const catName = id => (catById(id)||{name:'（已移除）'}).name;
+
+/* ---------- 營養計算 ---------- */
+function latestWeight(catId){
+  const w = liveRecs().filter(r=>r.type==='weight'&&r.catId===catId)
+    .sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
+  return w ? w.data.kg : null;
+}
+function waterTarget(cat){          // 每日建議攝水 ml
+  const kg = latestWeight(cat.id);
+  if(!kg) return null;
+  return Math.round(kg * (cat.waterMlPerKg || 50));
+}
+function kcalTarget(cat){           // DER = 70 × kg^0.75 × 係數
+  const kg = latestWeight(cat.id);
+  if(!kg) return null;
+  return Math.round(70 * Math.pow(kg, 0.75) * (cat.derFactor || 1.2));
+}
+function feedCalc(food, grams){     // 一餐的水分與熱量
+  return {
+    waterMl: round1(grams * (food.moisturePct||0) / 100),
+    kcal:    round1(grams * (food.kcalPer100g||0) / 100)
+  };
+}
+/* 某貓某日彙總 */
+function daySummary(catId, dateKey){
+  const recs = liveRecs().filter(r => r.catId===catId && dkey(new Date(r.ts))===dateKey);
+  const s = { poop:0, pee:0, abnormal:0, drinkMl:0, foodWaterMl:0, kcal:0, feeds:0, events:[] };
+  for(const r of recs){
+    if(r.type==='poop'){ s.poop++; if(r.data.status==='abnormal') s.abnormal++; }
+    else if(r.type==='pee'){ s.pee++; if(r.data.colorAbn) s.abnormal++; }
+    else if(r.type==='drink'){ s.drinkMl += (+r.data.ml||0); }
+    else if(r.type==='feed'){ s.feeds++; s.foodWaterMl += (+r.data.waterMl||0); s.kcal += (+r.data.kcal||0); }
+    else if(r.type==='event'){ s.events.push(r); s.abnormal++; }
+  }
+  s.drinkMl=round1(s.drinkMl); s.foodWaterMl=round1(s.foodWaterMl);
+  s.totalWaterMl = round1(s.drinkMl + s.foodWaterMl); s.kcal=round1(s.kcal);
+  return s;
+}
+
+/* ============================================================
+   同步引擎（Google 試算表 / Apps Script）
+   一次來回同時「推送本機變更＋拉回雲端變更」，updatedAt 新者勝。
+   離線或未設定：靜默排隊，連上自動補傳。
+   ============================================================ */
+const Sync = {
+  busy:false, timer:null, pollTimer:null, lastError:'',
+  enabled(){ return !!(DB.settings.syncUrl && DB.settings.syncKey); },
+  schedule(){                       // 存檔後 3 秒內合併送出
+    this.updatePill();
+    if(!this.enabled() || !DB.settings.autoSync) return;
+    clearTimeout(this.timer);
+    this.timer = setTimeout(()=>this.run(), 3000);
+  },
+  startPolling(){
+    clearInterval(this.pollTimer);
+    if(this.enabled() && DB.settings.autoSync)
+      this.pollTimer = setInterval(()=>this.run(), 60000);
+  },
+  collectChanges(){
+    const out = [];
+    for(const p of PENDING){
+      const arr = p.kind==='cat'?DB.cats : p.kind==='food'?DB.foods : DB.records;
+      const o = arr.find(x=>x.id===p.id);
+      if(o) out.push({ kind:p.kind, id:o.id, updatedAt:o.updatedAt||0,
+        deleted:!!o.deleted, json:JSON.stringify(o) });
+    }
+    return out;
+  },
+  applyRemote(items){
+    let changed = 0;
+    for(const it of items){
+      if(!it || !it.id) continue;
+      const key = it.kind==='cat'?'cats' : it.kind==='food'?'foods' : 'records';
+      const arr = DB[key];
+      const i = arr.findIndex(x=>x.id===it.id);
+      const local = i>=0 ? arr[i] : null;
+      if(local && (local.updatedAt||0) >= (it.updatedAt||0)) continue; // 本機較新
+      let obj; try{ obj = JSON.parse(it.json); }catch(e){ continue; }
+      obj.updatedAt = it.updatedAt; obj.deleted = !!it.deleted;
+      if(i>=0) arr[i]=obj; else arr.push(obj);
+      changed++;
+    }
+    return changed;
+  },
+  async run(manual){
+    if(!this.enabled()){ if(manual) toast('尚未設定雲端同步'); return; }
+    if(this.busy) return; this.busy=true; this.updatePill('sync');
+    const sending = this.collectChanges();
+    const sentIds = sending.map(x=>x.kind+'|'+x.id);
+    try{
+      const res = await fetch(DB.settings.syncUrl, {
+        method:'POST', redirect:'follow',
+        headers:{ 'Content-Type':'text/plain;charset=utf-8' },   // 避免 CORS preflight
+        body: JSON.stringify({
+          key: DB.settings.syncKey,
+          device: DB.settings.deviceName || '未命名裝置',
+          since: DB.settings.lastPullAt || 0,
+          changes: sending
+        })
+      });
+      const j = await res.json();
+      if(!j || !j.ok) throw new Error(j && j.error || '伺服器回應異常');
+      // 成功：清掉已送出的待同步（期間新增的保留）
+      PENDING = PENDING.filter(p=>!sentIds.includes(p.kind+'|'+p.id) ||
+        (()=>{ const arr=p.kind==='cat'?DB.cats:p.kind==='food'?DB.foods:DB.records;
+               const o=arr.find(x=>x.id===p.id);
+               const sent=sending.find(s=>s.kind===p.kind&&s.id===p.id);
+               return o && sent && (o.updatedAt||0) > sent.updatedAt; })());
+      const n = this.applyRemote(j.items||[]);
+      DB.settings.lastPullAt = j.serverNow || Date.now();
+      this.lastError='';
+      saveDB();
+      if(n>0){ UI.rerender(); }
+      if(manual) toast(n>0 ? `同步完成，拉回 ${n} 筆更新` : '同步完成');
+    }catch(e){
+      this.lastError = String(e.message||e);
+      if(manual) toast('同步失敗：' + (navigator.onLine?this.lastError:'目前離線，連線後會自動補傳'));
+    }finally{
+      this.busy=false; this.updatePill();
+      if(UI.page==='settings') Settings.renderSyncStatus();
+    }
+  },
+  updatePill(state){
+    const pill = $('#syncPill'), txt = $('#syncPillText');
+    pill.className = 'sync-pill no-print';
+    if(!this.enabled()){ txt.textContent='未同步'; return; }
+    if(state==='sync'){ pill.classList.add('on'); txt.textContent='同步中…'; return; }
+    if(this.lastError){ pill.classList.add('err'); txt.textContent='同步失敗'; return; }
+    if(PENDING.length){ pill.classList.add('pending'); txt.textContent=`待同步 ${PENDING.length}`; return; }
+    pill.classList.add('on'); txt.textContent='已同步';
+  }
+};
+window.addEventListener('online', ()=>Sync.schedule());
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && Sync.enabled()) Sync.run(); });
+
+/* ============================================================
+   UI 骨架：分頁切換
+   ============================================================ */
+const PAGES = [
+  {id:'today',    icon:'🏠', label:'今日'},
+  {id:'history',  icon:'📒', label:'記錄'},
+  {id:'stats',    icon:'📈', label:'統計'},
+  {id:'report',   icon:'📋', label:'報告'},
+  {id:'settings', icon:'⚙️', label:'設定'}
+];
+const UI = {
+  page:'today',
+  selCat:null,                    // 今日/統計頁目前選的貓
+  go(id){
+    this.page=id;
+    for(const p of PAGES){
+      $('#page-'+p.id).hidden = (p.id!==id);
+    }
+    this.renderNav();
+    this.rerender();
+    window.scrollTo({top:0});
+  },
+  renderNav(){
+    $('#topTabs').innerHTML = PAGES.map(p=>
+      `<button class="tab ${p.id===this.page?'active':''}" onclick="UI.go('${p.id}')">${p.icon} ${p.label}</button>`).join('');
+    $('#bottomNav').innerHTML = PAGES.map(p=>
+      `<button class="${p.id===this.page?'active':''}" onclick="UI.go('${p.id}')"><span class="bi">${p.icon}</span>${p.label}</button>`).join('');
+  },
+  rerender(){
+    if(liveCats().length===0 && this.page!=='settings'){ Today.renderEmpty(); return; }
+    if(this.page==='today') Today.render();
+    else if(this.page==='history') History.render();
+    else if(this.page==='stats') Stats.render();
+    else if(this.page==='report') Report.render();
+    else if(this.page==='settings') Settings.render();
+    Sync.updatePill();
+  },
+  /* 貓咪選擇列（single=只能選一隻；withUnknown=多貓時加「不確定」） */
+  catBar(sel, onpick, opts={}){
+    const cats = liveCats();
+    if(cats.length<=1 && !opts.always) return '';
+    let list = cats.map(c=>
+      `<button class="cat-chip ${opts.small?'small':''} ${sel===c.id?'active':''}" onclick="${onpick}('${c.id}')">
+        <span class="dot" style="background:${c.color}"></span>${esc(c.name)}</button>`);
+    if(opts.withUnknown && cats.length>1)
+      list.push(`<button class="cat-chip ${opts.small?'small':''} ${sel===UNKNOWN_CAT?'active':''}" onclick="${onpick}('${UNKNOWN_CAT}')">
+        <span class="dot" style="background:#9aa4ad"></span>？不確定</button>`);
+    return `<div class="cat-bar">${list.join('')}</div>`;
+  }
+};
+
+/* ============================================================
+   今日頁
+   ============================================================ */
+const Today = {
+  renderEmpty(){
+    for(const p of PAGES) $('#page-'+p.id).hidden = p.id!=='today';
+    UI.page='today'; UI.renderNav();
+    $('#page-today').innerHTML = `
+      <div class="card" style="text-align:center;padding:36px 20px">
+        <div style="font-size:44px">🐱</div>
+        <h2 style="margin:10px 0 6px">歡迎使用貓咪照護日誌</h2>
+        <p class="lede" style="margin:0 auto 18px">先建立第一隻貓的資料，就可以開始記錄大小便、飲食飲水與體重。</p>
+        <button class="btn accent lg" onclick="Settings.editCat()">＋ 新增貓咪</button>
+        <p class="hint" style="margin-top:14px">之後可在「設定」新增更多貓咪或調整資料。</p>
+      </div>`;
+  },
+  render(){
+    const cats = liveCats();
+    if(!UI.selCat || (!cats.some(c=>c.id===UI.selCat) && UI.selCat!==UNKNOWN_CAT)) UI.selCat = cats[0].id;
+    const cat = catById(UI.selCat) || cats[0];
+    const s = daySummary(cat.id, todayKey());
+    const wT = cat.id===UNKNOWN_CAT?null:waterTarget(cat);
+    const kT = cat.id===UNKNOWN_CAT?null:kcalTarget(cat);
+    const kg = cat.id===UNKNOWN_CAT?null:latestWeight(cat.id);
+    const wPct = wT ? Math.min(100, Math.round(s.totalWaterMl/wT*100)) : 0;
+    const kPct = kT ? Math.min(100, Math.round(s.kcal/kT*100)) : 0;
+
+    const recs = liveRecs().filter(r=>dkey(new Date(r.ts))===todayKey() &&
+        (cats.length<=1 || r.catId===cat.id))
+      .sort((a,b)=>new Date(b.ts)-new Date(a.ts));   // 多貓時只列目前選的貓（含「？不確定」）
+
+    $('#page-today').innerHTML = `
+      ${UI.catBar(cat.id,'Today.pickCat',{withUnknown:true})}
+      <div class="card">
+        <h2>${fmtDateFull(todayKey())} <span class="muted" style="font-weight:600;font-size:13px">${cats.length>1?esc(cat.name):''}</span></h2>
+        <div class="quick-grid" style="margin-top:10px">
+          ${this.quickBtn('poop', s.poop+' 次')}
+          ${this.quickBtn('pee', s.pee+' 次')}
+          ${this.quickBtn('feed', s.feeds+' 餐')}
+          ${this.quickBtn('drink', s.drinkMl>0? s.drinkMl+' ml':'—')}
+          ${this.quickBtn('weight', kg? kg+' kg':'—')}
+          ${this.quickBtn('event', s.events.length? s.events.length+' 筆':'—')}
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>今日攝取${cats.length>1?`（${esc(cat.name)}）`:''}</h2>
+        ${cat.id===UNKNOWN_CAT ? '<p class="empty">「不確定是誰」僅記次數，不計入個別貓的攝取統計。</p>' : `
+        <div class="meter">
+          <div class="m-head"><span>💧 總攝水（喝水 ${s.drinkMl} ＋ 食物 ${s.foodWaterMl} ml）</span>
+            <b>${s.totalWaterMl} <span class="muted" style="font-size:12px;font-weight:600">/ ${wT!=null?wT+' ml':'？'}</span></b></div>
+          <div class="m-track"><div class="m-fill ${wPct>=100?'ok':wPct>=60?'':'warn'}" style="width:${wT?Math.max(2,wPct):2}%"></div></div>
+          <div class="m-note">${wT==null ? '先記一次體重，才能算建議攝水量' :
+            wPct>=100 ? '已達今日建議量 ✓' : `還差約 ${Math.max(0,wT-s.totalWaterMl)} ml（建議 ${cat.waterMlPerKg||50} ml/kg/日）`}</div>
+        </div>
+        <div class="meter">
+          <div class="m-head"><span>🔥 熱量</span>
+            <b>${s.kcal} <span class="muted" style="font-size:12px;font-weight:600">/ ${kT!=null?kT+' kcal':'？'}</span></b></div>
+          <div class="m-track"><div class="m-fill ${kPct>110?'warn':kPct>=90?'ok':''}" style="width:${kT?Math.max(2,Math.min(100,kPct)):2}%"></div></div>
+          <div class="m-note">${kT==null ? '先記一次體重，才能估每日熱量需求' :
+            `每日需求約 ${kT} kcal（RER×${cat.derFactor||1.2}，僅供參考，依獸醫建議為準）`}</div>
+        </div>`}
+      </div>
+
+      <div class="card">
+        <h2>今日記錄 <span class="muted" style="font-size:12.5px;font-weight:600">${cats.length>1?`（${esc(cat.name)}）`:''}</span></h2>
+        ${recs.length ? `<ul class="rec-list">${recs.map(r=>Recs.itemHTML(r)).join('')}</ul>`
+          : '<p class="empty">今天還沒有記錄，點上面的大按鈕開始記。</p>'}
+      </div>`;
+  },
+  quickBtn(type, count){
+    const t = REC_TYPES[type];
+    return `<button class="quick-btn" onclick="Sheet.open('${type}')">
+      <span class="qi">${t.icon}</span><span class="ql">${t.label}</span>
+      <span class="qc">今日 ${count}</span></button>`;
+  },
+  pickCat(id){ UI.selCat=id; this.render(); }
+};
+
+/* 記錄項目共用顯示 */
+const Recs = {
+  describe(r){
+    const d = r.data||{};
+    if(r.type==='poop'){
+      if(d.status==='abnormal'){
+        const bits=[];
+        if(d.score) bits.push('便況'+d.score+'（'+(POOP_SCORES.find(s=>s.v===d.score)||{}).l+'）');
+        if(d.color && d.color!=='正常棕') bits.push(d.color);
+        if(d.blood) bits.push('血絲'); if(d.mucus) bits.push('黏液');
+        return {sub:bits.join('、')||'異常', abn:true};
+      }
+      return {sub:'正常', abn:false};
+    }
+    if(r.type==='pee'){
+      const size={S:'小',M:'中',L:'大'}[d.size]||'';
+      return {sub:(size?('尿塊 '+size):'')+(d.colorAbn?'、顏色/氣味異常':''), abn:!!d.colorAbn};
+    }
+    if(r.type==='feed'){
+      return {sub:`${esc(d.foodName||'')} ${d.grams} g → 水 ${d.waterMl} ml・${d.kcal} kcal${d.leftover?`（剩 ${d.leftover} g 已扣除）`:''}`, abn:false};
+    }
+    if(r.type==='drink') return {sub:`${d.ml} ml${d.method==='est'?'（估計）':''}`, abn:false};
+    if(r.type==='weight') return {sub:`${d.kg} kg`, abn:false};
+    if(r.type==='event') return {sub:esc(d.kind||'事件'), abn:true};
+    return {sub:'',abn:false};
+  },
+  itemHTML(r, showDate){
+    const t = REC_TYPES[r.type]||{icon:'❓',label:r.type};
+    const {sub,abn} = this.describe(r);
+    const many = liveCats().length>1;
+    return `<li>
+      <span class="rec-ico">${t.icon}</span>
+      <div class="rec-main">
+        <div class="rec-title">${t.label}${many?`<span class="rc-cat">${esc(catName(r.catId))}</span>`:''}</div>
+        <div class="rec-sub">${abn?`<span class="abn">${sub}</span>`:sub}${r.data&&r.data.note?`<span class="muted">・${esc(r.data.note)}</span>`:''}</div>
+      </div>
+      <span class="rec-time">${showDate?fmtDate(dkey(new Date(r.ts)))+' ':''}${fmtTime(r.ts)}</span>
+      <span class="rec-act no-print">
+        <button class="icon" onclick="Sheet.open('${r.type}','${r.id}')" title="編輯">✎</button>
+        <button class="icon danger" onclick="Recs.del('${r.id}')" title="刪除">✕</button>
+      </span></li>`;
+  },
+  del(id){
+    if(!confirm('確定刪除這筆記錄？')) return;
+    softDelete('record', id);
+    toast('已刪除'); UI.rerender();
+  }
+};
+
+/* ============================================================
+   記錄彈窗（bottom sheet）：poop / pee / feed / drink / weight / event
+   ============================================================ */
+const Sheet = {
+  cur:null,        // {type, editId, catId, form:{}}
+  open(type, editId){
+    const cats = liveCats();
+    if(!cats.length){ toast('請先在「設定」新增貓咪'); return; }
+    let form={}, catId = (UI.selCat && UI.page==='today') ? UI.selCat : cats[0].id;
+    let ts = new Date().toISOString();
+    if(editId){
+      const r = DB.records.find(x=>x.id===editId);
+      if(!r) return;
+      form = JSON.parse(JSON.stringify(r.data||{}));
+      catId = r.catId; ts = r.ts; type = r.type;
+    }else{
+      if(type==='poop') form={status:'normal'};
+      if(type==='pee')  form={size:'M'};
+      if(type==='feed'){ const f=liveFoods()[0]; form={foodId:f?f.id:'', grams:f&&f.defaultGrams||'' , leftover:''}; }
+      if(type==='drink') form={ml:'', method:'measure'};
+      if(type==='weight'){ const kg=latestWeight(catId); form={kg: kg||''}; }
+      if(type==='event') form={kind:'嘔吐'};
+    }
+    this.cur = {type, editId:editId||null, catId, ts, form};
+    this.render();
+    $('#sheetMask').classList.add('show');
+    document.body.style.overflow='hidden';
+  },
+  close(){
+    $('#sheetMask').classList.remove('show');
+    document.body.style.overflow='';
+    this.cur=null;
+  },
+  set(k,v){ this.cur.form[k]=v; this.render(); },
+  setNoRender(k,v){ this.cur.form[k]=v; },
+  setTs(v){ const d=new Date(v); if(!isNaN(d)) this.cur.ts=d.toISOString(); },
+  pickCat(id){ this.cur.catId=id; this.render(); },
+  render(){
+    const c = this.cur; if(!c) return;
+    const t = REC_TYPES[c.type];
+    const cats = liveCats();
+    const allowUnknown = (c.type==='poop'||c.type==='pee');
+    let body='';
+    if(c.type==='poop') body=this.poopBody(c.form);
+    else if(c.type==='pee') body=this.peeBody(c.form);
+    else if(c.type==='feed') body=this.feedBody(c.form);
+    else if(c.type==='drink') body=this.drinkBody(c.form);
+    else if(c.type==='weight') body=this.weightBody(c.form);
+    else if(c.type==='event') body=this.eventBody(c.form);
+
+    $('#sheetBody').innerHTML = `
+      <div class="sheet-head">
+        <h2>${t.icon} ${c.editId?'編輯':''}${t.label}</h2>
+        <button class="sheet-close" onclick="Sheet.close()" aria-label="關閉">✕</button>
+      </div>
+      ${cats.length>1 ? `<div class="sec"><div class="sec-label">哪一隻貓？</div>
+        ${UI.catBar(c.catId,'Sheet.pickCat',{always:true,small:true,withUnknown:allowUnknown})}</div>`:''}
+      ${body}
+      <div class="sec">
+        <div class="sec-label">時間</div>
+        <input type="datetime-local" value="${toLocalDT(c.ts)}" style="width:100%"
+          onchange="Sheet.setTs(this.value)">
+      </div>
+      <div class="sec">
+        <div class="sec-label">備註（可空）</div>
+        <textarea placeholder="想補充的觀察…" oninput="Sheet.setNoRender('note',this.value)">${esc(c.form.note||'')}</textarea>
+      </div>
+      <div class="row" style="justify-content:flex-end">
+        ${c.editId?'<button class="btn danger" onclick="Sheet.close();Recs.del(\''+c.editId+'\')">刪除</button>':''}
+        <button class="btn ghost" onclick="Sheet.close()">取消</button>
+        <button class="btn accent lg" onclick="Sheet.save()">✓ 記下</button>
+      </div>`;
+  },
+  /* --- 大便 --- */
+  poopBody(f){
+    return `
+      <div class="sec"><div class="sec-label">狀態</div>
+        <div class="opt-group">
+          <button class="opt ok ${f.status==='normal'?'active':''}" onclick="Sheet.set('status','normal')">😺 正常</button>
+          <button class="opt danger ${f.status==='abnormal'?'active':''}" onclick="Sheet.set('status','abnormal')">😿 異常</button>
+        </div></div>
+      ${f.status==='abnormal'?`
+      <div class="sec"><div class="sec-label">便況（1 硬 → 7 水狀，理想約 2–3）</div>
+        <div class="score-row">${POOP_SCORES.map(s=>
+          `<button class="score-btn ${f.score===s.v?'active':''}" onclick="Sheet.set('score',${s.v})"><b>${s.v}</b><span>${s.l}</span></button>`).join('')}
+        </div></div>
+      <div class="sec"><div class="sec-label">顏色</div>
+        <div class="opt-group">${POOP_COLORS.map(cl=>
+          `<button class="opt sm ${f.color===cl?'active':''}" onclick="Sheet.set('color','${cl}')">${cl}</button>`).join('')}
+        </div></div>
+      <div class="sec"><div class="sec-label">其他徵狀</div>
+        <div class="opt-group">
+          <button class="opt sm danger ${f.blood?'active':''}" onclick="Sheet.set('blood',${!f.blood})">血絲</button>
+          <button class="opt sm warn ${f.mucus?'active':''}" onclick="Sheet.set('mucus',${!f.mucus})">黏液</button>
+        </div></div>`:''}`;
+  },
+  /* --- 小便 --- */
+  peeBody(f){
+    return `
+      <div class="sec"><div class="sec-label">尿塊大小</div>
+        <div class="opt-group">
+          <button class="opt ${f.size==='S'?'active':''}" onclick="Sheet.set('size','S')">小</button>
+          <button class="opt ${f.size==='M'?'active':''}" onclick="Sheet.set('size','M')">中</button>
+          <button class="opt ${f.size==='L'?'active':''}" onclick="Sheet.set('size','L')">大</button>
+        </div></div>
+      <div class="sec"><div class="sec-label">有沒有異常？</div>
+        <div class="opt-group">
+          <button class="opt sm danger ${f.colorAbn?'active':''}" onclick="Sheet.set('colorAbn',${!f.colorAbn})">顏色/氣味異常</button>
+        </div></div>`;
+  },
+  /* --- 餵食 --- */
+  feedBody(f){
+    const foods = liveFoods();
+    const food = foods.find(x=>x.id===f.foodId);
+    const gross = parseFloat(f.grams)||0;
+    const left  = parseFloat(f.leftover)||0;
+    const net   = Math.max(0, gross-left);
+    const calc  = food ? feedCalc(food, net) : null;
+    return `
+      <div class="sec"><div class="sec-label">吃什麼？（設定 → 食物庫可新增）</div>
+        ${foods.length? `<select style="width:100%" onchange="Sheet.feedPickFood(this.value)">
+          ${foods.map(x=>`<option value="${x.id}" ${x.id===f.foodId?'selected':''}>${esc(x.name)}（${esc(x.type)}・水 ${x.moisturePct}%・${x.kcalPer100g} kcal/100g）</option>`).join('')}
+        </select>` : `<p class="empty" style="padding:4px 0">食物庫是空的。</p>
+          <button class="btn sm accent" onclick="Sheet.close();UI.go('settings');Settings.editFood()">＋ 先新增一種食物</button>`}
+      </div>
+      ${foods.length?`
+      <div class="sec"><div class="sec-label">給了多少（g）</div>
+        <div class="row">
+          <input type="number" inputmode="decimal" min="0" step="1" value="${esc(f.grams)}" placeholder="g"
+            style="width:110px" oninput="Sheet.setNoRender('grams',this.value);Sheet.feedPreview()">
+          <div class="opt-group">${[food&&food.defaultGrams||40, 15, 60, 85].filter((v,i,a)=>v&&a.indexOf(v)===i).map(g=>
+            `<button class="opt sm" onclick="Sheet.set('grams','${g}')">${g} g</button>`).join('')}
+          </div></div></div>
+      <div class="sec"><div class="sec-label">吃剩多少（g，可空；會從攝取扣掉）</div>
+        <input type="number" inputmode="decimal" min="0" step="1" value="${esc(f.leftover)}" placeholder="0"
+          style="width:110px" oninput="Sheet.setNoRender('leftover',this.value);Sheet.feedPreview()">
+      </div>
+      <div class="calc-preview" id="feedPreview">${calc?
+        `💧 水分 <span>${calc.waterMl} ml</span> 🔥 熱量 <span>${calc.kcal} kcal</span>（實吃 ${net} g）`:
+        '選食物並輸入克數後自動計算'}</div>`:''}`;
+  },
+  feedPickFood(id){
+    const f = liveFoods().find(x=>x.id===id);
+    this.cur.form.foodId=id;
+    if(f && f.defaultGrams && !this.cur.form.grams) this.cur.form.grams=f.defaultGrams;
+    this.render();
+  },
+  feedPreview(){
+    const f=this.cur.form;
+    const food=liveFoods().find(x=>x.id===f.foodId);
+    const net=Math.max(0,(parseFloat(f.grams)||0)-(parseFloat(f.leftover)||0));
+    const el=$('#feedPreview'); if(!el) return;
+    if(food){ const c=feedCalc(food,net);
+      el.innerHTML=`💧 水分 <span>${c.waterMl} ml</span> 🔥 熱量 <span>${c.kcal} kcal</span>（實吃 ${net} g）`; }
+  },
+  /* --- 喝水 --- */
+  drinkBody(f){
+    return `
+      <div class="sec"><div class="sec-label">喝了多少（ml）</div>
+        <div class="row">
+          <input type="number" inputmode="decimal" min="0" step="1" value="${esc(f.ml)}" placeholder="ml"
+            style="width:110px" oninput="Sheet.setNoRender('ml',this.value)">
+          <div class="opt-group">${[5,10,20,30,50].map(v=>
+            `<button class="opt sm" onclick="Sheet.set('ml','${v}')">${v}</button>`).join('')}
+          </div></div>
+        <p class="hint" style="margin:8px 0 0">量法：有刻度的水碗直接讀，或整碗秤重（1 g ≈ 1 ml），換水時記差值。</p>
+      </div>
+      <div class="sec"><div class="sec-label">這個數字是？</div>
+        <div class="opt-group">
+          <button class="opt sm ${f.method!=='est'?'active':''}" onclick="Sheet.set('method','measure')">實際量測</button>
+          <button class="opt sm ${f.method==='est'?'active':''}" onclick="Sheet.set('method','est')">大概估計</button>
+        </div></div>`;
+  },
+  /* --- 體重 --- */
+  weightBody(f){
+    const last = latestWeight(this.cur.catId);
+    return `
+      <div class="sec"><div class="sec-label">體重（kg）</div>
+        <input type="number" inputmode="decimal" min="0" step="0.01" value="${esc(f.kg)}" placeholder="例如 4.20"
+          style="width:140px" oninput="Sheet.setNoRender('kg',this.value)">
+        ${last?`<p class="hint" style="margin:8px 0 0">上次記錄：${last} kg</p>`:''}
+        <p class="hint" style="margin:4px 0 0">量法：抱貓一起站上體重計再減自己，或用寵物秤。</p>
+      </div>`;
+  },
+  /* --- 異常/事件 --- */
+  eventBody(f){
+    return `
+      <div class="sec"><div class="sec-label">發生什麼事？</div>
+        <div class="opt-group">${EVENT_KINDS.map(k=>
+          `<button class="opt ${f.kind===k?'active':''}" onclick="Sheet.set('kind','${k}')">${k}</button>`).join('')}
+        </div>
+        <p class="hint" style="margin:8px 0 0">軟便、拉肚子請用「大便 → 異常」記，統計才算得準。</p>
+      </div>`;
+  },
+  /* --- 存檔 --- */
+  save(){
+    const c=this.cur; if(!c) return;
+    const f=c.form;
+    if(c.catId===UNKNOWN_CAT && !(c.type==='poop'||c.type==='pee')){
+      toast('「不確定是誰」只能用在大小便記錄'); return;
+    }
+    let data={ note:(f.note||'').trim() };
+    if(c.type==='poop'){
+      data.status=f.status||'normal';
+      if(data.status==='abnormal'){ data.score=f.score||null; data.color=f.color||null;
+        data.blood=!!f.blood; data.mucus=!!f.mucus; }
+    }else if(c.type==='pee'){
+      data.size=f.size||'M'; data.colorAbn=!!f.colorAbn;
+    }else if(c.type==='feed'){
+      const food=liveFoods().find(x=>x.id===f.foodId);
+      if(!food){ toast('請先選擇食物'); return; }
+      const gross=parseFloat(f.grams);
+      if(!(gross>0)){ toast('請輸入克數'); return; }
+      const left=Math.min(gross, Math.max(0,parseFloat(f.leftover)||0));
+      const net=round1(gross-left);
+      const calc=feedCalc(food,net);
+      data.foodId=food.id; data.foodName=food.name; data.grams=gross;
+      data.leftover=left||0; data.netGrams=net;
+      data.waterMl=calc.waterMl; data.kcal=calc.kcal;
+    }else if(c.type==='drink'){
+      const ml=parseFloat(f.ml);
+      if(!(ml>0)){ toast('請輸入毫升數'); return; }
+      data.ml=ml; data.method=f.method||'measure';
+    }else if(c.type==='weight'){
+      const kg=parseFloat(f.kg);
+      if(!(kg>0&&kg<30)){ toast('請輸入合理的體重（kg）'); return; }
+      data.kg=kg;
+    }else if(c.type==='event'){
+      data.kind=f.kind||'其他';
+    }
+    const rec = c.editId ? DB.records.find(x=>x.id===c.editId) : { id:uid() };
+    rec.catId=c.catId; rec.ts=c.ts; rec.type=c.type; rec.data=data;
+    upsert('record', rec);
+    this.close();
+    toast(`已記下：${REC_TYPES[c.type].label} ✓`);
+    UI.rerender();
+  }
+};
+$('#sheetMask').addEventListener('click', e=>{ if(e.target.id==='sheetMask') Sheet.close(); });
+
+/* ============================================================
+   記錄頁（歷史列表）
+   ============================================================ */
+const History = {
+  filterType:'all', filterCat:'all', days:7,
+  render(){
+    const cats = liveCats();
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-this.days+1); cutoff.setHours(0,0,0,0);
+    let recs = liveRecs().filter(r=>new Date(r.ts)>=cutoff);
+    if(this.filterType!=='all') recs = recs.filter(r=>r.type===this.filterType);
+    if(this.filterCat!=='all') recs = recs.filter(r=>r.catId===this.filterCat);
+    recs.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+    const byDay={};
+    for(const r of recs){ const k=dkey(new Date(r.ts)); (byDay[k]=byDay[k]||[]).push(r); }
+    const dayKeys=Object.keys(byDay).sort().reverse();
+
+    $('#page-history').innerHTML = `
+      <div class="card no-print">
+        <div class="row">
+          <label class="field">範圍
+            <select onchange="History.days=+this.value;History.render()">
+              ${[7,14,30,90].map(d=>`<option value="${d}" ${this.days===d?'selected':''}>近 ${d} 天</option>`).join('')}
+            </select></label>
+          <label class="field">類型
+            <select onchange="History.filterType=this.value;History.render()">
+              <option value="all">全部</option>
+              ${Object.entries(REC_TYPES).map(([k,t])=>`<option value="${k}" ${this.filterType===k?'selected':''}>${t.icon} ${t.label}</option>`).join('')}
+            </select></label>
+          ${cats.length>1?`<label class="field">貓咪
+            <select onchange="History.filterCat=this.value;History.render()">
+              <option value="all">全部</option>
+              ${cats.map(c=>`<option value="${c.id}" ${this.filterCat===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}
+              <option value="${UNKNOWN_CAT}" ${this.filterCat===UNKNOWN_CAT?'selected':''}>？不確定</option>
+            </select></label>`:''}
+        </div>
+      </div>
+      ${dayKeys.length? dayKeys.map(k=>`
+        <div class="card">
+          <h2>${fmtDateFull(k)} <span class="muted" style="font-size:12.5px;font-weight:600">${byDay[k].length} 筆</span></h2>
+          <ul class="rec-list">${byDay[k].map(r=>Recs.itemHTML(r)).join('')}</ul>
+        </div>`).join('')
+      : '<div class="card"><p class="empty">這個範圍內沒有符合的記錄。</p></div>'}`;
+  }
+};
+
+/* ============================================================
+   統計頁（SVG 圖表）
+   ============================================================ */
+const Chart = {
+  /* 並排長條圖：series=[{label,color,values[]}], labels=[] */
+  bars(labels, series, opts={}){
+    const W=640, H=200, padL=34, padB=26, padT=10, padR=6;
+    const iw=W-padL-padR, ih=H-padT-padB;
+    const maxV=Math.max(1, ...series.flatMap(s=>s.values), opts.minMax||0);
+    const step=iw/labels.length;
+    const bw=Math.min(16,(step-6)/series.length);
+    const y=v=>padT+ih-(v/maxV)*ih;
+    let g='';
+    const ticks=this.ticks(maxV);
+    for(const t of ticks) g+=`<line x1="${padL}" y1="${y(t)}" x2="${W-padR}" y2="${y(t)}" stroke="var(--line)" stroke-width="1"/>
+      <text x="${padL-5}" y="${y(t)+4}" text-anchor="end" font-size="10" fill="#6b7683">${t}</text>`;
+    series.forEach((s,si)=>{ s.values.forEach((v,i)=>{
+      const x=padL+step*i+step/2-(bw*series.length)/2+si*bw;
+      if(v>0) g+=`<rect x="${x}" y="${y(v)}" width="${bw-1.5}" height="${Math.max(1,padT+ih-y(v))}" rx="2" fill="${s.color}"/>`;
+    });});
+    g+=this.xLabels(labels,padL,step,H,'bar');
+    return this.svg(W,H,g);
+  },
+  /* 折線圖：points=[{x label,y value|null}]，可加 target 水平線 */
+  line(labels, values, color, opts={}){
+    const W=640, H=200, padL=40, padB=26, padT=10, padR=8;
+    const iw=W-padL-padR, ih=H-padT-padB;
+    const vals=values.filter(v=>v!=null);
+    if(!vals.length) return '<p class="empty">尚無資料</p>';
+    let maxV=Math.max(...vals, opts.target||0), minV=Math.min(...vals, opts.target||Infinity);
+    if(opts.zeroBase){ minV=0; }
+    const span=(maxV-minV)||1; maxV+=span*0.12; if(!opts.zeroBase) minV-=span*0.12;
+    const step=iw/Math.max(1,labels.length-1);
+    const x=i=>padL+(labels.length===1?iw/2:step*i);
+    const y=v=>padT+ih-((v-minV)/(maxV-minV))*ih;
+    let g='';
+    const ticks=this.ticks(maxV,minV);
+    for(const t of ticks) g+=`<line x1="${padL}" y1="${y(t)}" x2="${W-padR}" y2="${y(t)}" stroke="var(--line)" stroke-width="1"/>
+      <text x="${padL-5}" y="${y(t)+4}" text-anchor="end" font-size="10" fill="#6b7683">${t%1?t.toFixed(1):t}</text>`;
+    if(opts.target) g+=`<line x1="${padL}" y1="${y(opts.target)}" x2="${W-padR}" y2="${y(opts.target)}" stroke="#b5761a" stroke-width="1.5" stroke-dasharray="5 4"/>
+      <text x="${W-padR}" y="${y(opts.target)-5}" text-anchor="end" font-size="10" fill="#b5761a" font-weight="700">目標 ${opts.target}${opts.unit||''}</text>`;
+    let path='', started=false;
+    values.forEach((v,i)=>{ if(v==null){started=false;return;}
+      path+=(started?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)+' '; started=true; });
+    g+=`<path d="${path}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    values.forEach((v,i)=>{ if(v!=null) g+=`<circle cx="${x(i)}" cy="${y(v)}" r="3.2" fill="${color}"/>`; });
+    g+=this.xLabels(labels,padL,iw/Math.max(1,labels.length-1),H,'point');
+    return this.svg(W,H,g);
+  },
+  ticks(maxV,minV=0){
+    const span=maxV-minV||1;
+    const raw=span/4;
+    const mag=Math.pow(10,Math.floor(Math.log10(raw)));
+    const nice=[1,2,2.5,5,10].map(m=>m*mag).find(m=>m>=raw)||mag*10;
+    const out=[]; const start=Math.ceil(minV/nice)*nice;
+    for(let t=start;t<=maxV+1e-9;t+=nice) out.push(round1(t));
+    return out.slice(0,7);
+  },
+  /* mode: 'bar'＝標籤置於分組中央；'point'＝標籤對齊資料點 */
+  xLabels(labels,padL,step,H,mode){
+    const n=labels.length, every=Math.ceil(n/8);
+    let g='';
+    labels.forEach((l,i)=>{ if(i%every) return;
+      let x = mode==='bar' ? padL+step*i+step/2
+            : (n===1 ? padL+step/2 : padL+step*i);
+      x = Math.min(Math.max(x,18), 640-18);   // 夾住，避免最右標籤被切掉
+      g+=`<text x="${x.toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="10" fill="#6b7683">${l}</text>`; });
+    return g;
+  },
+  svg(W,H,inner){ return `<svg viewBox="0 0 ${W} ${H}" role="img">${inner}</svg>`; }
+};
+
+const Stats = {
+  days:7, selCat:null,
+  render(){
+    const cats=liveCats();
+    if(!this.selCat||!cats.some(c=>c.id===this.selCat)) this.selCat=cats[0].id;
+    const cat=catById(this.selCat);
+    /* 日期軸 */
+    const keys=[]; const d=new Date(); d.setDate(d.getDate()-this.days+1);
+    for(let i=0;i<this.days;i++){ keys.push(dkey(d)); d.setDate(d.getDate()+1); }
+    const labels=keys.map(fmtDate);
+    const sums=keys.map(k=>daySummary(cat.id,k));
+    const unknown = cats.length>1 ? keys.map(k=>daySummary(UNKNOWN_CAT,k)) : null;
+
+    /* 體重（近 90 天，全部點） */
+    const wRecs=liveRecs().filter(r=>r.type==='weight'&&r.catId===cat.id)
+      .sort((a,b)=>new Date(a.ts)-new Date(b.ts));
+    const wCut=new Date(); wCut.setDate(wCut.getDate()-90);
+    const wPts=wRecs.filter(r=>new Date(r.ts)>=wCut);
+    const wLabels=wPts.map(r=>fmtDate(dkey(new Date(r.ts))));
+    const wVals=wPts.map(r=>r.data.kg);
+
+    const wT=waterTarget(cat), kT=kcalTarget(cat);
+    const abnDays=keys.filter((k,i)=>sums[i].abnormal>0).length;
+
+    $('#page-stats').innerHTML = `
+      ${UI.catBar(this.selCat,'Stats.pickCat')}
+      <div class="card no-print">
+        <div class="opt-group">
+          ${[7,14,30].map(v=>`<button class="opt sm ${this.days===v?'active':''}" onclick="Stats.days=${v};Stats.render()">近 ${v} 天</button>`).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="kpi">
+          <div><b>${round1(sums.reduce((a,s)=>a+s.poop,0)/this.days)}</b><span>平均大便 次/日</span></div>
+          <div><b>${round1(sums.reduce((a,s)=>a+s.pee,0)/this.days)}</b><span>平均小便 次/日</span></div>
+          <div><b>${Math.round(sums.reduce((a,s)=>a+s.totalWaterMl,0)/this.days)}</b><span>平均攝水 ml/日</span></div>
+          <div><b>${Math.round(sums.reduce((a,s)=>a+s.kcal,0)/this.days)}</b><span>平均熱量 kcal/日</span></div>
+          <div><b style="color:${abnDays?'var(--danger)':'var(--ink)'}">${abnDays}</b><span>有異常的天數</span></div>
+        </div>
+        ${unknown&&unknown.some(s=>s.poop+s.pee>0)?'<p class="hint" style="margin:0">另有記在「？不確定」的大小便，未計入本貓平均。</p>':''}
+      </div>
+      <div class="card chart-card">
+        <p class="chart-title">🚽 大小便次數（次/日）</p>
+        <p class="chart-sub">${esc(cat.name)}・近 ${this.days} 天</p>
+        ${Chart.bars(labels,[
+          {label:'大便',color:'#b5761a',values:sums.map(s=>s.poop)},
+          {label:'小便',color:'#2c6e7f',values:sums.map(s=>s.pee)}
+        ],{minMax:4})}
+        <div class="legend"><span><i style="background:#b5761a"></i>大便</span>
+          <span><i style="background:#2c6e7f"></i>小便</span></div>
+      </div>
+      <div class="card chart-card">
+        <p class="chart-title">💧 每日總攝水（ml）</p>
+        <p class="chart-sub">喝水＋食物水分${wT?`・目標 ${wT} ml/日`:'・記體重後顯示目標線'}</p>
+        ${Chart.line(labels, sums.map(s=>s.totalWaterMl>0?s.totalWaterMl:null), '#2c6e7f',
+          {target:wT||0, zeroBase:true, unit:' ml'})}
+      </div>
+      <div class="card chart-card">
+        <p class="chart-title">🔥 每日熱量（kcal）</p>
+        <p class="chart-sub">依食物庫換算${kT?`・需求約 ${kT} kcal/日`:''}</p>
+        ${Chart.line(labels, sums.map(s=>s.kcal>0?s.kcal:null), '#2e7d5b',
+          {target:kT||0, zeroBase:true, unit:' kcal'})}
+      </div>
+      <div class="card chart-card">
+        <p class="chart-title">⚖️ 體重（kg）</p>
+        <p class="chart-sub">近 90 天全部記錄點</p>
+        ${wVals.length ? Chart.line(wLabels,wVals,'#7b5aa6',{}) : '<p class="empty">還沒有體重記錄。</p>'}
+      </div>`;
+  },
+  pickCat(id){ if(id===UNKNOWN_CAT) return; this.selCat=id; this.render(); }
+};
+
+/* ============================================================
+   報告頁（給獸醫看的期間摘要）
+   ============================================================ */
+const Report = {
+  selCat:null, from:null, to:null,
+  render(){
+    const cats=liveCats();
+    if(!this.selCat||!cats.some(c=>c.id===this.selCat)) this.selCat=cats[0].id;
+    if(!this.to) this.to=todayKey();
+    if(!this.from){ const d=new Date(); d.setDate(d.getDate()-13); this.from=dkey(d); }
+    $('#page-report').innerHTML = `
+      <div class="card no-print">
+        <h2>📋 獸醫報告</h2>
+        <p class="hint">選期間產生摘要，可直接列印／存 PDF 帶去診間，或複製文字傳 LINE。</p>
+        ${UI.catBar(this.selCat,'Report.pickCat')}
+        <div class="row">
+          <label class="field">從 <input type="date" value="${this.from}" onchange="Report.from=this.value"></label>
+          <label class="field">到 <input type="date" value="${this.to}" onchange="Report.to=this.value"></label>
+          <button class="btn accent" onclick="Report.build()">產生報告</button>
+        </div>
+      </div>
+      <div id="reportOut"></div>`;
+    this.build();
+  },
+  pickCat(id){ if(id===UNKNOWN_CAT) return; this.selCat=id; this.render(); },
+  rangeKeys(){
+    const out=[]; const d=new Date(this.from+'T00:00'); const end=new Date(this.to+'T00:00');
+    if(d>end) return out;
+    while(d<=end && out.length<400){ out.push(dkey(d)); d.setDate(d.getDate()+1); }
+    return out;
+  },
+  build(){
+    const cat=catById(this.selCat); if(!cat) return;
+    const keys=this.rangeKeys();
+    if(!keys.length){ $('#reportOut').innerHTML='<div class="card"><p class="empty">日期範圍不正確。</p></div>'; return; }
+    const sums=keys.map(k=>daySummary(cat.id,k));
+    const n=keys.length;
+    const avg=f=>round1(sums.reduce((a,s)=>a+f(s),0)/n);
+    const wRecs=liveRecs().filter(r=>r.type==='weight'&&r.catId===cat.id&&
+        dkey(new Date(r.ts))>=this.from&&dkey(new Date(r.ts))<=this.to)
+      .sort((a,b)=>new Date(a.ts)-new Date(b.ts));
+    /* 異常明細 */
+    const abnRecs=liveRecs().filter(r=>{
+      const k=dkey(new Date(r.ts));
+      if(k<this.from||k>this.to||r.catId!==cat.id) return false;
+      return (r.type==='poop'&&r.data.status==='abnormal')||(r.type==='pee'&&r.data.colorAbn)||r.type==='event';
+    }).sort((a,b)=>new Date(a.ts)-new Date(b.ts));
+    const wT=waterTarget(cat), kT=kcalTarget(cat);
+    const kgNow=latestWeight(cat.id);
+
+    const html = `
+      <div class="card report-body" id="reportCard">
+        <h2>🐾 ${esc(cat.name)}・照護摘要</h2>
+        <p class="report-meta">期間：${this.from} ～ ${this.to}（${n} 天）・產出日：${todayKey()}
+          ${kgNow?`・目前體重 ${kgNow} kg`:''}</p>
+        <h3>每日平均</h3>
+        <div class="kpi">
+          <div><b>${avg(s=>s.poop)}</b><span>大便 次/日</span></div>
+          <div><b>${avg(s=>s.pee)}</b><span>小便 次/日</span></div>
+          <div><b>${Math.round(avg(s=>s.totalWaterMl))}</b><span>總攝水 ml/日${wT?`（建議 ${wT}）`:''}</span></div>
+          <div><b>${Math.round(avg(s=>s.kcal))}</b><span>熱量 kcal/日${kT?`（需求約 ${kT}）`:''}</span></div>
+        </div>
+        <h3>逐日紀錄</h3>
+        <div class="tbl-scroll"><table>
+          <tr><th>日期</th><th>大便</th><th>小便</th><th>喝水 ml</th><th>食物水 ml</th><th>總攝水 ml</th><th>熱量 kcal</th><th>異常</th></tr>
+          ${keys.map((k,i)=>{const s=sums[i];
+            return `<tr><td>${fmtDate(k)}</td><td>${s.poop||'·'}</td><td>${s.pee||'·'}</td>
+              <td>${s.drinkMl||'·'}</td><td>${s.foodWaterMl||'·'}</td><td>${s.totalWaterMl||'·'}</td>
+              <td>${s.kcal||'·'}</td><td>${s.abnormal?`<span style="color:var(--danger);font-weight:700">${s.abnormal}</span>`:'·'}</td></tr>`;}).join('')}
+        </table></div>
+        <h3>異常明細（${abnRecs.length} 筆）</h3>
+        ${abnRecs.length?`<ul class="rec-list">${abnRecs.map(r=>Recs.itemHTML(r,true)).join('')}</ul>`
+          :'<p class="empty">期間內沒有記到異常。</p>'}
+        <h3>體重記錄</h3>
+        ${wRecs.length?`<div class="tbl-scroll"><table><tr><th>日期</th><th>體重 kg</th><th>變化</th></tr>
+          ${wRecs.map((r,i)=>{const prev=i>0?wRecs[i-1].data.kg:null;
+            const diff=prev!=null?round1(r.data.kg-prev):null;
+            return `<tr><td>${fmtDate(dkey(new Date(r.ts)))}</td><td>${r.data.kg}</td>
+              <td>${diff==null?'—':(diff>0?'+':'')+diff}</td></tr>`;}).join('')}</table></div>`
+          :'<p class="empty">期間內沒有體重記錄。</p>'}
+        <p class="hint" style="margin-top:14px">＊攝水與熱量依食物庫的含水量/熱量設定換算，僅供參考；診斷請以獸醫檢查為準。</p>
+      </div>
+      <div class="row no-print" style="margin-bottom:16px">
+        <button class="btn accent" onclick="window.print()">🖨 列印 / 存 PDF</button>
+        <button class="btn ghost" onclick="Report.copyText()">📋 複製文字摘要</button>
+      </div>`;
+    $('#reportOut').innerHTML=html;
+  },
+  copyText(){
+    const cat=catById(this.selCat);
+    const keys=this.rangeKeys(); const n=keys.length;
+    const sums=keys.map(k=>daySummary(cat.id,k));
+    const avg=f=>round1(sums.reduce((a,s)=>a+f(s),0)/n);
+    const kgNow=latestWeight(cat.id);
+    const abnLines=[];
+    keys.forEach((k,i)=>{ const s=sums[i];
+      if(s.abnormal>0) abnLines.push(`  ${fmtDate(k)}：異常 ${s.abnormal} 筆`); });
+    const txt=[
+      `🐾 ${cat.name} 照護摘要（${this.from}～${this.to}）`,
+      kgNow?`目前體重：${kgNow} kg`:null,
+      `平均每日：大便 ${avg(s=>s.poop)} 次、小便 ${avg(s=>s.pee)} 次`,
+      `平均攝水：${Math.round(avg(s=>s.totalWaterMl))} ml/日（喝水＋食物水分）`,
+      `平均熱量：${Math.round(avg(s=>s.kcal))} kcal/日`,
+      abnLines.length?`異常日：\n${abnLines.join('\n')}`:'期間內無異常記錄',
+      `（由貓咪照護日誌產出，數值依食物庫設定換算、僅供參考）`
+    ].filter(Boolean).join('\n');
+    navigator.clipboard.writeText(txt).then(()=>toast('已複製，可貼到 LINE'))
+      .catch(()=>{ prompt('手動複製：', txt); });
+  }
+};
+
+/* ============================================================
+   設定頁
+   ============================================================ */
+const Settings = {
+  render(){
+    const cats=liveCats(), foods=liveFoods(), s=DB.settings;
+    $('#page-settings').innerHTML = `
+      <div class="card">
+        <h2>🐱 貓咪管理</h2>
+        ${cats.length?`<div class="tbl-scroll"><table>
+          <tr><th>名字</th><th>體重</th><th>建議攝水</th><th>熱量需求</th><th></th></tr>
+          ${cats.map(c=>{const kg=latestWeight(c.id);
+            return `<tr><td><span class="cat-chip small" style="cursor:default"><span class="dot" style="background:${c.color}"></span>${esc(c.name)}</span></td>
+            <td>${kg?kg+' kg':'—'}</td><td>${waterTarget(c)||'—'} ml</td><td>${kcalTarget(c)||'—'} kcal</td>
+            <td><button class="icon" onclick="Settings.editCat('${c.id}')">✎ 編輯</button></td></tr>`;}).join('')}
+        </table></div>`:'<p class="empty">還沒有貓咪。</p>'}
+        <button class="btn sm accent" style="margin-top:10px" onclick="Settings.editCat()">＋ 新增貓咪</button>
+      </div>
+
+      <div class="card">
+        <h2>🍚 食物庫</h2>
+        <p class="hint">含水量與熱量請照包裝標示填，攝水/熱量統計才準。</p>
+        ${foods.length?`<div class="tbl-scroll"><table>
+          <tr><th>名稱</th><th>類型</th><th>含水 %</th><th>kcal/100g</th><th>常用量</th><th></th></tr>
+          ${foods.map(f=>`<tr><td>${esc(f.name)}</td><td>${esc(f.type)}</td><td>${f.moisturePct}</td>
+            <td>${f.kcalPer100g}</td><td>${f.defaultGrams||'—'} g</td>
+            <td><button class="icon" onclick="Settings.editFood('${f.id}')">✎ 編輯</button></td></tr>`).join('')}
+        </table></div>`:'<p class="empty">還沒有食物。</p>'}
+        <div class="row" style="margin-top:10px">
+          <button class="btn sm accent" onclick="Settings.editFood()">＋ 新增食物</button>
+          <button class="btn sm ghost" onclick="Settings.addPresetFoods()">一鍵加入常見範本（再改成你的品牌數值）</button>
+        </div>
+      </div>
+
+      <div class="card" id="secSync">
+        <h2>☁️ 雲端同步（Google 試算表）</h2>
+        <p class="hint">設定一次之後，多台裝置、多位照顧者開同一個網址就能共同記錄。詳細步驟見「使用說明」。</p>
+        <div class="row">
+          <label class="field" style="flex:1;min-width:220px">Apps Script 網址
+            <input type="text" id="syncUrl" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(s.syncUrl)}"></label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <label class="field">同步金鑰<input type="text" id="syncKey" placeholder="與 Apps Script 內相同" value="${esc(s.syncKey)}"></label>
+          <label class="field">這台裝置叫<input type="text" id="deviceName" placeholder="例如：媽媽的手機" value="${esc(s.deviceName)}"></label>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn sm accent" onclick="Settings.saveSync()">儲存設定</button>
+          <button class="btn sm ghost" onclick="Sync.run(true)">立即同步</button>
+          ${Sync.enabled()?`<button class="btn sm ghost" onclick="Settings.copyCareLink()">🔗 產生照顧者連結</button>`:''}
+        </div>
+        <p class="hint" id="syncStatus" style="margin:10px 0 0"></p>
+      </div>
+
+      <div class="card">
+        <h2>💾 備份與還原</h2>
+        <div class="row">
+          <button class="btn sm ghost" onclick="Settings.exportJSON()">匯出備份（JSON）</button>
+          <button class="btn sm ghost" onclick="document.getElementById('importFile').click()">匯入備份（合併）</button>
+          <input type="file" id="importFile" accept=".json,application/json" hidden onchange="Settings.importJSON(this)">
+        </div>
+        <p class="hint" style="margin:10px 0 0">資料存在這台裝置的瀏覽器裡。換手機、清瀏覽器資料前請先匯出；有開雲端同步的話，試算表本身就是一份備份。</p>
+      </div>
+
+      <div class="card">
+        <h2>📖 說明與其他</h2>
+        <div class="row">
+          <a class="btn sm ghost" href="guide.html" style="text-decoration:none">使用說明・同步設定教學</a>
+          <button class="btn sm danger" onclick="Settings.wipe()">清除本機全部資料</button>
+        </div>
+      </div>`;
+    this.renderSyncStatus();
+  },
+  renderSyncStatus(){
+    const el=$('#syncStatus'); if(!el) return;
+    if(!Sync.enabled()){ el.textContent='目前僅存本機（未設定同步）。'; return; }
+    const t=DB.settings.lastPullAt?new Date(DB.settings.lastPullAt):null;
+    el.innerHTML =
+      (Sync.lastError?`<span style="color:var(--danger);font-weight:700">上次同步失敗：${esc(Sync.lastError)}</span><br>`:'')+
+      `待同步 ${PENDING.length} 筆・上次成功：${t?t.toLocaleString('zh-TW',{hour12:false}):'尚未'}`;
+  },
+  saveSync(){
+    DB.settings.syncUrl=$('#syncUrl').value.trim();
+    DB.settings.syncKey=$('#syncKey').value.trim();
+    DB.settings.deviceName=$('#deviceName').value.trim();
+    saveDB(); Sync.startPolling(); Sync.updatePill();
+    toast('已儲存'); this.render();
+    if(Sync.enabled()) Sync.run(true);
+  },
+  copyCareLink(){
+    const base=location.origin.startsWith('http')?location.href.split('#')[0]:'';
+    if(!base){ toast('本機檔案無法產生連結，請先上線（GitHub Pages）'); return; }
+    const conf=btoa(unescape(encodeURIComponent(JSON.stringify(
+      {u:DB.settings.syncUrl,k:DB.settings.syncKey}))));
+    const url=base+'#setup='+conf;
+    navigator.clipboard.writeText(url).then(()=>toast('已複製連結，傳給照顧者即可'))
+      .catch(()=>prompt('手動複製：',url));
+  },
+  /* --- 貓咪編輯 --- */
+  editCat(id){
+    const c = id?DB.cats.find(x=>x.id===id):null;
+    const f = c?{...c}:{name:'',color:CAT_COLORS[liveCats().length%CAT_COLORS.length],
+      birthYM:'',derFactor:1.2,waterMlPerKg:50};
+    this._catForm=f; this._catEditId=id||null;
+    this.renderCatSheet();
+    $('#sheetMask').classList.add('show'); document.body.style.overflow='hidden';
+  },
+  renderCatSheet(){
+    const f=this._catForm;
+    $('#sheetBody').innerHTML=`
+      <div class="sheet-head"><h2>🐱 ${this._catEditId?'編輯':'新增'}貓咪</h2>
+        <button class="sheet-close" onclick="Sheet.close()">✕</button></div>
+      <div class="sec"><div class="sec-label">名字</div>
+        <input type="text" id="catName" value="${esc(f.name)}" placeholder="例如：小虎" style="width:100%"></div>
+      <div class="sec"><div class="sec-label">代表色（多貓時辨識用）</div>
+        <div class="opt-group">${CAT_COLORS.map(cl=>
+          `<button class="opt sm ${f.color===cl?'active':''}" style="${f.color===cl?`background:${cl};border-color:${cl}`:''}"
+            onclick="Settings._catForm.color='${cl}';Settings.renderCatSheet()">
+            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${cl};vertical-align:-1px"></span></button>`).join('')}
+        </div></div>
+      <div class="sec"><div class="sec-label">出生年月（可空）</div>
+        <input type="month" id="catBirth" value="${esc(f.birthYM||'')}"></div>
+      <div class="sec"><div class="sec-label">熱量需求係數（DER＝RER×係數）</div>
+        <select id="catDer" style="width:100%">${DER_FACTORS.map(d=>
+          `<option value="${d.v}" ${+f.derFactor===d.v?'selected':''}>${d.l}</option>`).join('')}</select></div>
+      <div class="sec"><div class="sec-label">建議攝水量（ml／kg 體重／日，常用 40–60）</div>
+        <input type="number" id="catWater" inputmode="decimal" min="20" max="100" step="5" value="${esc(f.waterMlPerKg||50)}" style="width:110px"></div>
+      <div class="row" style="justify-content:flex-end">
+        ${this._catEditId&&liveCats().length>1?`<button class="btn danger" onclick="Settings.delCat()">刪除</button>`:''}
+        <button class="btn ghost" onclick="Sheet.close()">取消</button>
+        <button class="btn accent lg" onclick="Settings.saveCat()">✓ 儲存</button></div>`;
+  },
+  saveCat(){
+    const name=$('#catName').value.trim();
+    if(!name){ toast('請輸入名字'); return; }
+    const obj=this._catEditId?DB.cats.find(x=>x.id===this._catEditId):{id:uid()};
+    obj.name=name; obj.color=this._catForm.color;
+    obj.birthYM=$('#catBirth').value; obj.derFactor=+$('#catDer').value;
+    obj.waterMlPerKg=+$('#catWater').value||50;
+    upsert('cat',obj);
+    Sheet.close(); toast('已儲存 ✓');
+    if(!UI.selCat) UI.selCat=obj.id;
+    UI.rerender();
+  },
+  delCat(){
+    if(!confirm('刪除這隻貓？牠的記錄會保留在資料裡但不再顯示。')) return;
+    softDelete('cat',this._catEditId);
+    if(UI.selCat===this._catEditId) UI.selCat=null;
+    Sheet.close(); toast('已刪除'); UI.rerender();
+  },
+  /* --- 食物編輯 --- */
+  editFood(id){
+    const x=id?DB.foods.find(o=>o.id===id):null;
+    const f=x?{...x}:{name:'',type:'乾糧',moisturePct:'',kcalPer100g:'',defaultGrams:''};
+    this._foodForm=f; this._foodEditId=id||null;
+    this.renderFoodSheet();
+    $('#sheetMask').classList.add('show'); document.body.style.overflow='hidden';
+  },
+  renderFoodSheet(){
+    const f=this._foodForm;
+    $('#sheetBody').innerHTML=`
+      <div class="sheet-head"><h2>🍚 ${this._foodEditId?'編輯':'新增'}食物</h2>
+        <button class="sheet-close" onclick="Sheet.close()">✕</button></div>
+      <div class="sec"><div class="sec-label">名稱（含品牌口味好辨認）</div>
+        <input type="text" id="fdName" value="${esc(f.name)}" placeholder="例如：ｘｘ 雞肉主食罐 80g" style="width:100%"></div>
+      <div class="sec"><div class="sec-label">類型</div>
+        <div class="opt-group">${FOOD_TYPES.map(t=>
+          `<button class="opt sm ${f.type===t?'active':''}" onclick="Settings._foodForm.type='${t}';Settings.renderFoodSheet()">${t}</button>`).join('')}</div></div>
+      <div class="row">
+        <label class="field">含水量 %<input type="number" id="fdMoist" inputmode="decimal" min="0" max="100" step="0.5" value="${esc(f.moisturePct)}" placeholder="乾糧約10、罐頭約80" style="width:130px"></label>
+        <label class="field">熱量 kcal/100g<input type="number" id="fdKcal" inputmode="decimal" min="0" step="1" value="${esc(f.kcalPer100g)}" placeholder="看包裝標示" style="width:130px"></label>
+        <label class="field">常用一餐量 g<input type="number" id="fdDef" inputmode="decimal" min="0" step="1" value="${esc(f.defaultGrams)}" placeholder="可空" style="width:110px"></label>
+      </div>
+      <p class="hint" style="margin-top:8px">包裝多半標「水分 ≤ x%」與「代謝能 ME kcal/kg」：kcal/kg ÷ 10 ＝ kcal/100g。</p>
+      <div class="row" style="justify-content:flex-end;margin-top:10px">
+        ${this._foodEditId?`<button class="btn danger" onclick="Settings.delFood()">刪除</button>`:''}
+        <button class="btn ghost" onclick="Sheet.close()">取消</button>
+        <button class="btn accent lg" onclick="Settings.saveFood()">✓ 儲存</button></div>`;
+  },
+  saveFood(){
+    const name=$('#fdName').value.trim();
+    const moist=parseFloat($('#fdMoist').value), kcal=parseFloat($('#fdKcal').value);
+    if(!name){ toast('請輸入名稱'); return; }
+    if(!(moist>=0&&moist<=100)){ toast('含水量請填 0–100'); return; }
+    if(!(kcal>=0)){ toast('請填熱量（kcal/100g）'); return; }
+    const obj=this._foodEditId?DB.foods.find(x=>x.id===this._foodEditId):{id:uid()};
+    obj.name=name; obj.type=this._foodForm.type;
+    obj.moisturePct=moist; obj.kcalPer100g=kcal;
+    obj.defaultGrams=parseFloat($('#fdDef').value)||null;
+    upsert('food',obj);
+    Sheet.close(); toast('已儲存 ✓'); this.render();
+  },
+  delFood(){
+    if(!confirm('刪除這個食物？（既有餵食記錄不受影響）')) return;
+    softDelete('food',this._foodEditId);
+    Sheet.close(); toast('已刪除'); this.render();
+  },
+  addPresetFoods(){
+    const presets=[
+      {name:'範本：乾糧（請改成你的品牌）',type:'乾糧',moisturePct:10,kcalPer100g:380,defaultGrams:40},
+      {name:'範本：主食罐（請改成你的品牌）',type:'主食罐',moisturePct:80,kcalPer100g:100,defaultGrams:80},
+      {name:'範本：副食罐/餐包（請改成你的品牌）',type:'副食罐/餐包',moisturePct:85,kcalPer100g:60,defaultGrams:70},
+      {name:'範本：凍乾零食（請改成你的品牌）',type:'零食',moisturePct:5,kcalPer100g:400,defaultGrams:5}
+    ];
+    for(const p of presets){
+      if(!liveFoods().some(f=>f.name===p.name)) upsert('food',{id:uid(),...p});
+    }
+    toast('已加入 4 筆範本，數值請照包裝修改');
+    this.render();
+  },
+  /* --- 備份 --- */
+  exportJSON(){
+    const blob=new Blob([JSON.stringify(DB,null,1)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='catcare-backup-'+todayKey().replaceAll('-','')+'.json';
+    a.click(); URL.revokeObjectURL(a.href);
+    toast('已匯出備份');
+  },
+  importJSON(input){
+    const file=input.files[0]; input.value='';
+    if(!file) return;
+    const rd=new FileReader();
+    rd.onload=()=>{
+      try{
+        const d=JSON.parse(rd.result);
+        if(!d||!Array.isArray(d.records)) throw new Error('格式不符');
+        let n=0;
+        for(const kind of ['cat','food','record']){
+          const src=kind==='cat'?d.cats:kind==='food'?d.foods:d.records;
+          const dst=kind==='cat'?DB.cats:kind==='food'?DB.foods:DB.records;
+          for(const o of (src||[])){
+            const i=dst.findIndex(x=>x.id===o.id);
+            if(i<0){ dst.push(o); markPending(kind,o.id); n++; }
+            else if((o.updatedAt||0)>(dst[i].updatedAt||0)){ dst[i]=o; markPending(kind,o.id); n++; }
+          }
+        }
+        saveDB(); Sync.schedule();
+        toast(`匯入完成，合併 ${n} 筆`); UI.rerender();
+      }catch(e){ toast('匯入失敗：'+e.message); }
+    };
+    rd.readAsText(file);
+  },
+  wipe(){
+    if(!confirm('確定清除「這台裝置」的全部資料？（雲端試算表不會被刪）'))return;
+    if(!confirm('再確認一次：本機資料將全部消失，建議先匯出備份。確定？'))return;
+    localStorage.removeItem(LS_KEY); localStorage.removeItem(LS_KEY+'_pending');
+    location.reload();
+  }
+};
+
+/* ============================================================
+   啟動
+   ============================================================ */
+function handleSetupLink(){
+  const m=location.hash.match(/^#setup=(.+)$/);
+  if(!m) return;
+  try{
+    const conf=JSON.parse(decodeURIComponent(escape(atob(m[1]))));
+    if(conf.u&&conf.k){
+      const had=Sync.enabled();
+      if(!had || confirm('這是一個共同記錄連結，要套用它的同步設定嗎？')){
+        DB.settings.syncUrl=conf.u; DB.settings.syncKey=conf.k;
+        if(!DB.settings.deviceName) DB.settings.deviceName='照顧者的裝置';
+        saveDB();
+        toast('已連上共同記錄 ✓');
+      }
+    }
+  }catch(e){ console.warn('setup link', e); }
+  history.replaceState(null,'',location.pathname+location.search);
+}
+loadDB();
+handleSetupLink();
+UI.renderNav();
+UI.go('today');
+Sync.updatePill();
+Sync.startPolling();
+if(Sync.enabled()) Sync.run();
+</script>
+</body>
+</html>

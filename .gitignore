@@ -1,0 +1,5 @@
+_NOTES.md
+_history/
+*.json
+!package.json
+_test/

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐾%3C/text%3E%3C/svg%3E">
+<title>使用說明｜貓咪照護日誌</title>
+<style>
+:root{
+  --ink:#1f2a33;--text:#2a3340;--muted:#6b7683;--line:#dbe1df;--bg:#eef1ef;--card:#fff;
+  --accent:#2c6e7f;--accent-soft:#e3eef0;--ok:#2e7d5b;--ok-soft:#e2f0e9;
+  --warn:#b5761a;--warn-soft:#f6ecd9;--danger:#b4453c;--danger-soft:#f4e0dd;
+  --radius:12px;--radius-sm:8px;--radius-pill:999px;
+  --shadow:0 1px 2px rgba(31,42,51,.06),0 8px 24px rgba(31,42,51,.06);
+  --font:"PingFang TC","Noto Sans TC","Microsoft JhengHei",-apple-system,system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font);color:var(--text);background:var(--bg);line-height:1.75;
+  font-size:15px;-webkit-font-smoothing:antialiased;word-break:break-word;overflow-wrap:anywhere}
+.wrap{max-width:760px;margin:0 auto;padding:24px 16px 80px}
+.eyebrow{font-size:12px;letter-spacing:.16em;color:var(--accent);font-weight:700;text-transform:uppercase}
+h1{font-size:26px;font-weight:800;margin:6px 0 8px;color:var(--ink)}
+h2{font-size:18px;font-weight:800;color:var(--ink);margin:0 0 10px;padding-left:9px;border-left:4px solid var(--accent)}
+h3{font-size:15px;font-weight:800;color:var(--ink);margin:16px 0 6px}
+.lede{font-size:14.5px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+.hint{color:var(--muted);font-size:13px}
+a{color:var(--accent)}
+.btn{display:inline-block;font-size:15px;font-weight:700;border:1px solid var(--ink);
+  background:var(--ink);color:#fff;padding:9px 18px;border-radius:var(--radius-sm);
+  text-decoration:none;cursor:pointer;font-family:inherit}
+.btn.ghost{background:#fff;color:var(--ink)}
+ol.steps{margin:0;padding-left:22px}
+ol.steps li{margin-bottom:10px}
+ol.steps b{color:var(--ink)}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted)}
+.tbl-scroll{overflow-x:auto}
+code{background:var(--accent-soft);color:var(--accent);padding:1px 6px;border-radius:5px;font-size:13.5px}
+pre{background:#20303a;color:#dfe9ee;border-radius:10px;padding:14px;overflow-x:auto;
+  font-size:12px;line-height:1.55;max-height:420px}
+.copybar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 6px}
+.notice{padding:12px 15px;border:1.5px solid #e2b4b4;background:#fdf2f2;border-radius:11px;
+  color:#c0392b;font-size:13.5px;line-height:1.7;font-weight:600;margin:12px 0}
+.tip{padding:11px 14px;background:var(--ok-soft);border:1px solid #bcd9cb;border-radius:10px;
+  color:#1d5c42;font-size:13.5px;margin:12px 0}
+.warn-box{padding:11px 14px;background:var(--warn-soft);border:1px solid #e6d3ad;border-radius:10px;
+  color:#7a5410;font-size:13.5px;margin:12px 0}
+.toc{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px}
+.toc a{font-size:13px;font-weight:700;border:1px solid var(--line);background:#fff;
+  padding:6px 13px;border-radius:var(--radius-pill);text-decoration:none}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);
+  color:#fff;padding:11px 20px;border-radius:999px;font-size:14px;font-weight:600;
+  opacity:0;pointer-events:none;transition:opacity .25s;z-index:50}
+.toast.show{opacity:1}
+@media print{.toc,.btn{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">CAT CARE LOG · GUIDE</p>
+  <h1>🐾 貓咪照護日誌｜使用說明</h1>
+  <p class="lede">記大小便、飲食（自動算水分與熱量）、體重；可多貓、可多人共同記錄、可產獸醫報告。</p>
+  <p><a class="btn" href="index.html">← 回到工具</a></p>
+
+  <nav class="toc">
+    <a href="#start">快速上手</a><a href="#record">怎麼記錄</a><a href="#calc">水分與熱量怎麼算</a>
+    <a href="#sync">雲端同步設定</a><a href="#sitter">照顧者共同記錄</a><a href="#data">資料與備份</a><a href="#faq">常見問題</a>
+  </nav>
+
+  <div class="card" id="start">
+    <h2>1｜快速上手（第一次用）</h2>
+    <ol class="steps">
+      <li><b>新增貓咪</b>：打開工具會先請你建立貓咪資料（名字、熱量係數、攝水標準用預設即可）。</li>
+      <li><b>記一次體重</b>：點「⚖️ 體重」。有體重，工具才能算出每日建議攝水量與熱量需求。</li>
+      <li><b>建食物庫</b>：設定 → 食物庫 →「一鍵加入常見範本」，再把<b>含水量％</b>與<b>熱量 kcal/100g</b> 改成你家食物包裝上的數字（範本數值只是常見參考，各品牌差很多）。</li>
+      <li><b>開始記錄</b>：回「今日」頁，點大按鈕隨手記。每筆記錄預設用現在時間，補記可改時間。</li>
+    </ol>
+    <p class="tip">💡 手機用法：用瀏覽器開啟工具網址 → 分享 →「加入主畫面」，之後像 App 一樣點開就記。</p>
+  </div>
+
+  <div class="card" id="record">
+    <h2>2｜怎麼記錄</h2>
+    <div class="tbl-scroll"><table>
+      <tr><th>按鈕</th><th>記什麼</th><th>細節</th></tr>
+      <tr><td>💩 大便</td><td>每次一筆</td><td>預設「正常」兩秒記完；選「異常」可展開便況 1–7 分（1 硬 → 7 水狀，理想約 2–3）、顏色、血絲、黏液。</td></tr>
+      <tr><td>💧 小便</td><td>每次一筆（鏟到一個尿塊算一次）</td><td>記尿塊大小（小／中／大）；顏色或氣味怪的勾「異常」。</td></tr>
+      <tr><td>🍚 餵食</td><td>每餐一筆</td><td>選食物、填給的克數；吃剩的填「吃剩 g」會自動扣掉。水分與熱量即時算給你看。</td></tr>
+      <tr><td>🚰 喝水</td><td>加水／換水時記差值</td><td>有刻度的水碗直接讀；或整碗秤重（1 g ≈ 1 ml）。不確定就選「大概估計」。</td></tr>
+      <tr><td>⚖️ 體重</td><td>建議每週 1 次固定時段</td><td>抱貓站上體重計再減自己，或用寵物秤。</td></tr>
+      <tr><td>⚠️ 異常/事件</td><td>發生就記</td><td>嘔吐、食慾差、精神差、吃藥驅蟲等。軟便請用「大便 → 異常」記，統計才準。</td></tr>
+    </table></div>
+    <h3>多貓家庭</h3>
+    <p>設定裡新增第二隻貓後，記錄時會出現「哪一隻貓」選擇列；共用貓砂盆認不出是誰的大小便，選「？不確定」——次數會另計，不會弄髒個別貓的統計。</p>
+    <h3>記錄頁・統計頁・報告頁</h3>
+    <p>「記錄」看逐日流水帳、可改可刪；「統計」看次數、攝水、熱量、體重趨勢圖；「報告」選期間一鍵產生摘要，<b>列印／存 PDF</b> 帶去診間，或<b>複製文字</b>傳 LINE。</p>
+  </div>
+
+  <div class="card" id="calc">
+    <h2>3｜水分與熱量怎麼算</h2>
+    <h3>每日總攝水</h3>
+    <p><code>總攝水 ＝ 喝水記錄加總 ＋ Σ（實吃克數 × 食物含水量％）</code></p>
+    <p>建議量預設 <b>50 ml／kg 體重／日</b>（常見參考範圍約 40–60，可在貓咪設定調整），用最近一次體重換算。貓吃罐頭時大部分水分來自食物，喝水少是正常的——所以工具把兩者加總來看。</p>
+    <h3>每日熱量需求</h3>
+    <p><code>RER ＝ 70 ×（體重 kg）^0.75；DER ＝ RER × 係數</code></p>
+    <p>係數預設 1.2（已絕育成貓），可在貓咪設定改（減重 1.0、未絕育 1.4、幼貓 2.0–2.5 等）。</p>
+    <div class="notice">⚠️ 以上是常用參考公式，<b>不是醫療建議</b>：每隻貓狀況不同（腎病、糖尿病等更需個別化），目標值請以你的獸醫指示為準。工具的價值在「連續記錄的趨勢」，變化比單日數字重要。</div>
+  </div>
+
+  <div class="card" id="sync">
+    <h2>4｜雲端同步設定（Google 試算表，一次性約 10 分鐘）</h2>
+    <p>設定完成後：多台裝置、多位照顧者開同一個網址就共同記錄同一份資料；資料存在<b>你自己的</b> Google 試算表，不經過任何第三方伺服器。不設定也完全能用（純本機）。</p>
+    <ol class="steps">
+      <li>用你的 Google 帳號開一個<b>新的 Google 試算表</b>（內容留空，檔名隨意，例如「貓咪日誌同步」）。</li>
+      <li>上方選單 <b>擴充功能 → Apps Script</b>，會開一個程式編輯器。</li>
+      <li>把編輯器裡原有的幾行刪掉，<b>貼上下面整段程式碼</b>（有複製按鈕）。</li>
+      <li>把第一行的 <code>SECRET = '請改成你自己的金鑰'</code> 改成你自己想的一串密語（中英文都可以，這是你們的同步暗號）。按 💾 儲存。</li>
+      <li>右上角 <b>部署 → 新增部署作業</b> → 左邊齒輪選「<b>網頁應用程式</b>」→ 執行身分選「<b>我</b>」、誰可以存取選「<b>任何人</b>」→ 部署。</li>
+      <li>第一次會要求授權：選你的帳號 →（畫面說「Google 尚未驗證」是正常的，因為這是你自己寫入自己試算表的小程式）→ 進階 → 前往（不安全）→ 允許。</li>
+      <li>複製產生的<b>網頁應用程式網址</b>（結尾是 <code>/exec</code>）。可先貼到瀏覽器打開測試，看到「同步伺服器運作中 ✓」就成功了。</li>
+      <li>回到工具 <b>設定 → 雲端同步</b>：貼上網址、填你剛剛設的金鑰、給這台裝置取個名字 → 儲存設定。看到「同步完成」就通了。</li>
+    </ol>
+    <div class="copybar"><h3 style="margin:0">Apps Script 程式碼</h3>
+      <button class="btn ghost" onclick="copyCode()">📋 複製程式碼</button></div>
+    <pre id="gsCode">（程式碼載入中——若沒出現，開同資料夾的 sync-appscript.gs 檔複製即可）</pre>
+    <div class="warn-box">⚠️ 之後若在 Apps Script 改了程式碼，要用「部署 → 管理部署作業 → 編輯 → 新版本」更新，網址才會生效。「任何人可存取」指的是「知道這串很長網址＋金鑰的人才能讀寫」，兩樣都別公開貼出去。</div>
+  </div>
+
+  <div class="card" id="sitter">
+    <h2>5｜照顧者共同記錄（出門請人顧貓）</h2>
+    <p>照顧者那邊<b>不用安裝、不用登入、不用設定</b>：</p>
+    <ol class="steps">
+      <li>你在 <b>設定 → 雲端同步 → 「🔗 產生照顧者連結」</b>，把連結傳 LINE 給對方。</li>
+      <li>對方點開連結 → 工具自動連上你的試算表 → 建議也「加入主畫面」。</li>
+      <li>對方照常點大按鈕記錄（餵了什麼、上了幾次廁所）；你在外面打開工具就看得到，最多差一分鐘。</li>
+      <li>你也看得出是誰記的——試算表裡每筆都有裝置名稱。</li>
+    </ol>
+    <p class="tip">💡 對方第一次打開時看不到貓咪名字？等幾秒讓它同步完成即可；沒網路時記的資料也會在連線後自動補傳。</p>
+  </div>
+
+  <div class="card" id="data">
+    <h2>6｜資料存哪裡・備份</h2>
+    <ul>
+      <li>資料存在<b>每台裝置自己的瀏覽器</b>（localStorage）；有開同步時，Google 試算表是共同的雲端資料庫兼備份。</li>
+      <li>同一支手機用「不同瀏覽器」或「檔案直開 vs 網址開」資料不互通——固定用同一個入口。</li>
+      <li>清除瀏覽器資料會把本機記錄清掉：請定期 <b>設定 → 匯出備份（JSON）</b>，或開雲端同步。</li>
+      <li>換新手機：開同一個網址＋同一份同步設定，資料自己回來；沒開同步就用匯出／匯入搬。</li>
+    </ul>
+  </div>
+
+  <div class="card" id="faq">
+    <h2>7｜常見問題</h2>
+    <h3>Q：一定要每次餵食都秤克數嗎？</h3>
+    <p>建議秤，才能算準水分與熱量。固定用同一個小碗的話，先秤一次「一碗幾克」，之後都填那個數字，並設成該食物的「常用一餐量」。</p>
+    <h3>Q：貓喝水根本看不到牠喝，怎麼記？</h3>
+    <p>記「碗的差值」：早上裝 200 ml，晚上剩 150 ml，就記 50 ml（多貓共用水碗時可記在「大概估計」）。吃主食罐的貓一天喝很少是正常的，看「總攝水」那條進度即可。</p>
+    <h3>Q：什麼情況該提高警覺？</h3>
+    <p>一般常見的就醫警訊包括：<b>超過 24–48 小時沒小便或頻繁進出砂盆卻尿不出來（尤其公貓，屬急症）</b>、連續多日腹瀉或帶血、突然大量喝水尿量暴增、食慾明顯下降、體重短期內明顯減輕。工具的異常標記與報告可以幫你把這些趨勢帶給獸醫看，但<b>判斷請交給獸醫</b>。</p>
+    <h3>Q：同步失敗顯示紅點？</h3>
+    <p>先檢查網路；再到設定頁看錯誤訊息——「金鑰不符」就是兩邊密語打得不一樣；網址要以 <code>/exec</code> 結尾。離線期間的記錄都在，連上會自動補傳。</p>
+  </div>
+
+  <p class="hint">貓咪照護日誌 v1・2026-07-20・單檔 HTML，離線可用；雲端同步為選配（Google Apps Script）。本工具僅供記錄與參考，不構成獸醫醫療建議。</p>
+</div>
+<div class="toast" id="toast">已複製 ✓</div>
+<script>
+'use strict';
+/* 內嵌 Apps Script 程式碼（與 sync-appscript.gs 同步維護） */
+const GS_CODE = `var SECRET = '請改成你自己的金鑰';   // ← 一定要改！並與工具端設定一致
+
+function doPost(e) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var body = JSON.parse(e.postData.contents);
+    if (!body || body.key !== SECRET) return out({ ok: false, error: '金鑰不符' });
+
+    var serverNow = Date.now();
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sh = ss.getSheetByName('data');
+    if (!sh) {
+      sh = ss.insertSheet('data');
+      sh.appendRow(['id', 'kind', 'updatedAt', 'deleted', 'json', 'device', 'syncedAt']);
+    }
+
+    var rows = sh.getDataRange().getValues();   // 含表頭
+    var index = {};                             // id → 列號（1 起算）
+    for (var i = 1; i < rows.length; i++) index[rows[i][0]] = i + 1;
+
+    // ---- 寫入本次推送的變更（updatedAt 新者勝） ----
+    var changes = body.changes || [];
+    for (var c = 0; c < changes.length; c++) {
+      var it = changes[c];
+      if (!it || !it.id) continue;
+      var row = [it.id, it.kind, it.updatedAt || 0, it.deleted ? 1 : '',
+                 it.json, body.device || '', serverNow];
+      var rn = index[it.id];
+      if (rn) {
+        var cur = rows[rn - 1][2] || 0;
+        if ((it.updatedAt || 0) > cur) sh.getRange(rn, 1, 1, 7).setValues([row]);
+      } else {
+        sh.appendRow(row);
+        index[it.id] = sh.getLastRow();
+      }
+    }
+
+    // ---- 回傳其他裝置的變更（syncedAt 晚於上次拉取；留 5 秒重疊防漏） ----
+    var since = (body.since || 0) - 5000;
+    var items = [];
+    var data2 = sh.getDataRange().getValues();
+    for (var r = 1; r < data2.length; r++) {
+      var v = data2[r];
+      if ((v[6] || 0) > since) {
+        items.push({ id: v[0], kind: v[1], updatedAt: v[2] || 0,
+                     deleted: !!v[3], json: v[4] });
+      }
+    }
+    return out({ ok: true, serverNow: serverNow, items: items });
+
+  } catch (err) {
+    return out({ ok: false, error: String(err) });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** 瀏覽器直接打開網址可測試是否部署成功 */
+function doGet(e) {
+  return out({ ok: true, ping: '貓咪照護日誌同步伺服器運作中 ✓' });
+}
+
+function out(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+document.getElementById('gsCode').textContent = GS_CODE;
+function copyCode(){
+  navigator.clipboard.writeText(GS_CODE).then(()=>{
+    const t=document.getElementById('toast');
+    t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800);
+  }).catch(()=>prompt('手動複製：', GS_CODE));
+}
+</script>
+</body>
+</html>
