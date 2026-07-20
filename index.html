@@ -1250,7 +1250,7 @@ const Settings = {
         </table></div>`:'<p class="empty">還沒有食物。</p>'}
         <div class="row" style="margin-top:10px">
           <button class="btn sm accent" onclick="Settings.editFood()">＋ 新增食物</button>
-          <button class="btn sm ghost" onclick="Settings.addPresetFoods()">一鍵加入常見範本（再改成你的品牌數值）</button>
+          <button class="btn sm ghost" onclick="Settings.addPresetFoods()">⭐ 一鍵加入我家常用食物（已查證官方標示）</button>
         </div>
       </div>
 
@@ -1426,16 +1426,23 @@ const Settings = {
     Sheet.close(); toast('已刪除'); this.render();
   },
   addPresetFoods(){
+    /* 依 2026-07 官方／代理商公開標示查證；口味改版時請對照包裝微調 */
     const presets=[
-      {name:'範本：乾糧（請改成你的品牌）',type:'乾糧',moisturePct:10,kcalPer100g:380,defaultGrams:40},
-      {name:'範本：主食罐（請改成你的品牌）',type:'主食罐',moisturePct:80,kcalPer100g:100,defaultGrams:80},
-      {name:'範本：副食罐/餐包（請改成你的品牌）',type:'副食罐/餐包',moisturePct:85,kcalPer100g:60,defaultGrams:70},
-      {name:'範本：凍乾零食（請改成你的品牌）',type:'零食',moisturePct:5,kcalPer100g:400,defaultGrams:5}
+      {name:"CORE 無穀成貓（火雞）乾糧",type:"乾糧",moisturePct:10,kcalPer100g:398,defaultGrams:20},
+      {name:"ZIWI 巔峰 風乾羊肉",type:"乾糧",moisturePct:14,kcalPer100g:495,defaultGrams:20},
+      {name:"ZIWI 巔峰 風乾牛肉",type:"乾糧",moisturePct:14,kcalPer100g:490,defaultGrams:20},
+      {name:"ZIWI 巔峰 風乾鹿肉",type:"乾糧",moisturePct:14,kcalPer100g:465,defaultGrams:20},
+      {name:"乾糧混合（CORE⅓＋巔峰⅔）",type:"乾糧",moisturePct:12.7,kcalPer100g:455,defaultGrams:30},
+      {name:"MAC's 火雞肉＋火雞心 主食罐",type:"主食罐",moisturePct:80,kcalPer100g:89,defaultGrams:100},
+      {name:"MAC's 雞肉＋雞心 主食罐",type:"主食罐",moisturePct:80,kcalPer100g:111,defaultGrams:100},
+      {name:"MAC's 鴨肉＋火雞肉＋雞肉 主食罐",type:"主食罐",moisturePct:79,kcalPer100g:101,defaultGrams:100},
+      {name:"SEEDS MamaMia 湯罐 85g",type:"副食罐/餐包",moisturePct:85,kcalPer100g:49,defaultGrams:85},
+      {name:"Greenies 潔牙餅（約1.4 kcal/顆）",type:"零食",moisturePct:10,kcalPer100g:358,defaultGrams:2}
     ];
     for(const p of presets){
       if(!liveFoods().some(f=>f.name===p.name)) upsert('food',{id:uid(),...p});
     }
-    toast('已加入 4 筆範本，數值請照包裝修改');
+    toast('已加入 10 筆常用食物（2026-07 查證官方標示）');
     this.render();
   },
   /* --- 備份 --- */
