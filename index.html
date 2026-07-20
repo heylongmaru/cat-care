@@ -1437,12 +1437,14 @@ const Settings = {
       {name:"MAC's 雞肉＋雞心 主食罐",type:"主食罐",moisturePct:80,kcalPer100g:111,defaultGrams:100},
       {name:"MAC's 鴨肉＋火雞肉＋雞肉 主食罐",type:"主食罐",moisturePct:79,kcalPer100g:101,defaultGrams:100},
       {name:"SEEDS MamaMia 湯罐 85g",type:"副食罐/餐包",moisturePct:85,kcalPer100g:49,defaultGrams:85},
-      {name:"Greenies 潔牙餅（約1.4 kcal/顆）",type:"零食",moisturePct:10,kcalPer100g:358,defaultGrams:2}
+      {name:"Greenies 潔牙餅（約1.4 kcal/顆）",type:"零食",moisturePct:10,kcalPer100g:358,defaultGrams:2},
+      {name:"好味小姐 貓丸凍乾（濃縮全雞）",type:"零食",moisturePct:5,kcalPer100g:499,defaultGrams:5},
+      {name:"爭鮮 鮪魚凍乾（熱量為估計值）",type:"零食",moisturePct:5,kcalPer100g:370,defaultGrams:3}
     ];
     for(const p of presets){
       if(!liveFoods().some(f=>f.name===p.name)) upsert('food',{id:uid(),...p});
     }
-    toast('已加入 10 筆常用食物（2026-07 查證官方標示）');
+    toast('已加入 12 筆常用食物（2026-07 查證官方標示）');
     this.render();
   },
   /* --- 備份 --- */
