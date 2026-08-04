@@ -2,4 +2,5 @@ _NOTES.md
 _history/
 *.json
 !package.json
+!manifest.json
 _test/

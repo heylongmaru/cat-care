@@ -3,9 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#2c6e7f">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐾%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#2c6e7f" id="themeColorMeta">
+<meta name="description" content="記錄貓咪的大小便、飲食飲水、體重與保健品用藥，自動換算攝水量與熱量。">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="貓咪日誌">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232c6e7f'/%3E%3Cpath d='M18 26 18 15l8 6a20 20 0 0 1 12 0l8-6v11a17 14 0 1 1-36 0z' fill='%23fff'/%3E%3Ccircle cx='26' cy='33' r='2.6' fill='%232c6e7f'/%3E%3Ccircle cx='38' cy='33' r='2.6' fill='%232c6e7f'/%3E%3Cpath d='M32 38.5a3 3 0 0 1-3-2.2h6a3 3 0 0 1-3 2.2z' fill='%232c6e7f'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232c6e7f'/%3E%3Cpath d='M18 26 18 15l8 6a20 20 0 0 1 12 0l8-6v11a17 14 0 1 1-36 0z' fill='%23fff'/%3E%3Ccircle cx='26' cy='33' r='2.6' fill='%232c6e7f'/%3E%3Ccircle cx='38' cy='33' r='2.6' fill='%232c6e7f'/%3E%3Cpath d='M32 38.5a3 3 0 0 1-3-2.2h6a3 3 0 0 1-3 2.2z' fill='%232c6e7f'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
 <title>貓咪照護日誌</title>
+<script>
+/* 深色模式：在畫面繪製前先套用，避免閃白 */
+(function(){
+  try{
+    var m = localStorage.getItem('catcare_theme') || 'auto';
+    var dark = m==='dark' || (m==='auto' && window.matchMedia &&
+               window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if(dark) document.documentElement.setAttribute('data-theme','dark');
+  }catch(e){}
+})();
+</script>
 <style>
 /* ============================================================
    design-system.css v1（內嵌）＋ 06-cat-care 專用樣式
@@ -22,7 +40,42 @@
   --shadow-hover:0 6px 18px rgba(23,40,58,.08);
   --wrap:1040px; --wrap-narrow:760px;
   --font:"PingFang TC","Noto Sans TC","Microsoft JhengHei",-apple-system,system-ui,sans-serif;
+  /* 圖示配色（可愛風：彩色圓底＋白色圖形） */
+  --i-poop:#a9743f; --i-pee:#e0a43c; --i-feed:#e08a4c; --i-drink:#4aa3c4;
+  --i-weight:#7b8fa8; --i-event:#d9694f; --i-supp:#7b5aa6;
 }
+/* ---------- 深色模式 ---------- */
+html[data-theme="dark"]{
+  --ink:#e9eef4; --text:#dce3ea; --muted:#93a0ae; --line:#2f3a46;
+  --bg:#151a20; --card:#1d242c;
+  --accent:#63b4c9; --accent-soft:#1d343c;
+  --ok:#5fc79b; --ok-soft:#173028;
+  --warn:#dfa95d; --warn-soft:#332810;
+  --danger:#e87e72; --danger-soft:#3a201d;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.28);
+  --shadow-hover:0 6px 18px rgba(0,0,0,.36);
+  --i-poop:#b5834b; --i-pee:#e3ae4d; --i-feed:#e5975c;
+  --i-drink:#57b0d1; --i-weight:#8d9fb5; --i-event:#e07a61; --i-supp:#a58ac9;
+  color-scheme:dark;
+}
+html[data-theme="dark"] .btn{border-color:var(--accent);background:var(--accent);color:#10171d}
+/* 這三條的 color 一定要寫，否則會被上面那條 .btn 的深色字蓋掉，
+   變成「深底＋深字」完全看不見（v1.4 的「清除本機全部資料」就中過這個） */
+html[data-theme="dark"] .btn.ghost{background:var(--card);color:var(--text);border-color:var(--line)}
+html[data-theme="dark"] .btn.warn{background:var(--card);color:var(--warn);border-color:var(--warn)}
+html[data-theme="dark"] .btn.danger{background:var(--card);color:var(--danger);border-color:var(--danger)}
+html[data-theme="dark"] .icon.danger{color:var(--danger)}
+html[data-theme="dark"] .tab.active,html[data-theme="dark"] .cat-chip.active{background:var(--accent);border-color:var(--accent);color:#10171d}
+/* 注意 :not(.active)：這條若把選中的也蓋掉，選中狀態的彩色底就沒了，
+   結果是「深底＋深字」看不見。加狀態樣式時請沿用這個寫法。 */
+html[data-theme="dark"] .opt:not(.active),
+html[data-theme="dark"] .score-btn:not(.active):not(.ideal),
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea,
+html[data-theme="dark"] .icon,html[data-theme="dark"] .sheet-close{background:#242c36;color:var(--text)}
+html[data-theme="dark"] .opt.active{color:#10171d}
+html[data-theme="dark"] .notice{border-color:#6d3b38;background:#33201e;color:#f0a49a}
+html[data-theme="dark"] .toast{background:var(--accent);color:#10171d}
+html[data-theme="dark"] .dirty{background:var(--warn-soft);border-color:#4a3a18;color:var(--warn)}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{font-family:var(--font);color:var(--text);background:var(--bg);line-height:1.6;
@@ -36,10 +89,12 @@ h2{font-size:16px;font-weight:800;color:var(--ink);margin:0 0 4px}
 .hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .muted{color:var(--muted)}
 a{color:var(--accent)}
-header.app{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
-  padding:6px 2px 12px;border-bottom:2px solid var(--ink);margin-bottom:14px}
-header.app h1{font-size:22px;letter-spacing:.5px;margin:0}
-header.app .sub{color:var(--muted);font-size:13px}
+header.app{display:flex;align-items:center;gap:9px;flex-wrap:nowrap;
+  padding:6px 2px 11px;border-bottom:2px solid var(--ink);margin-bottom:14px}
+header.app h1{font-size:22px;letter-spacing:.5px;margin:0;display:flex;align-items:center;gap:7px;
+  white-space:nowrap}
+header.app .sub{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:560px){header.app .sub{display:none}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
   padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
@@ -100,6 +155,57 @@ th{font-size:12px;color:var(--muted);font-weight:700}
 @media(max-width:560px){.grid{grid-template-columns:1fr}header.app h1{font-size:19px}}
 
 /* ---------- 06-cat-care 專用 ---------- */
+/* SVG 圖示：跨手機長相一致（emoji 由系統決定，SVG 由我們決定） */
+.ico{display:inline-block;vertical-align:-.16em;flex:none}
+.ico svg{display:block;width:100%;height:100%}
+/* 圓底彩色圖示（快速打點大按鈕用，維持可愛感） */
+.ico-round{display:inline-flex;align-items:center;justify-content:center;
+  border-radius:34%;flex:none}
+.ico-round svg{width:64%;height:64%}
+
+/* 卡片式列表（取代手機上會斷字折行的表格） */
+.item-list{display:grid;grid-template-columns:1fr;gap:9px}
+@media(min-width:761px){.item-list{grid-template-columns:1fr 1fr}}
+.item{display:flex;align-items:center;gap:10px;border:1px solid var(--line);
+  background:var(--card);border-radius:var(--radius);padding:11px 12px}
+.item-main{flex:1;min-width:0}
+.item-name{font-size:14.5px;font-weight:800;color:var(--ink);line-height:1.35}
+.item-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.item-meta .chip{margin:0;font-size:11.5px;padding:1px 8px}
+.item-meta .chip.key{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.item-act{flex:none}
+
+/* 今日頁提示卡（便祕／體重警訊） */
+.alerts{display:grid;gap:8px;margin-bottom:14px}
+.alert-card{display:flex;gap:10px;align-items:flex-start;border-radius:var(--radius);
+  padding:11px 13px;font-size:13.5px;line-height:1.6;border:1px solid}
+.alert-card.warn{background:var(--warn-soft);border-color:#e6d3ad;color:#7a5410}
+.alert-card.danger{background:var(--danger-soft);border-color:#e2b4b4;color:#a33c33}
+html[data-theme="dark"] .alert-card.warn{border-color:#4a3a18;color:var(--warn)}
+html[data-theme="dark"] .alert-card.danger{border-color:#5c2f2a;color:var(--danger)}
+.alert-card b{display:block;font-weight:800;margin-bottom:1px}
+.alert-card .ac-body{flex:1;min-width:0}
+
+/* 常見市售食物挑選器 */
+.fl-list{display:grid;gap:8px;max-height:52vh;overflow-y:auto;padding-right:2px}
+.fl-item{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);
+  border-radius:var(--radius-sm);padding:10px 11px;background:var(--card)}
+.fl-main{flex:1;min-width:0}
+.fl-name{font-size:14px;font-weight:800;color:var(--ink);line-height:1.35}
+.fl-src{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.5}
+.fl-caution{font-size:12px;color:var(--warn);font-weight:700;margin-top:5px;line-height:1.5}
+.fl-act{flex:none;padding-top:2px}
+.chip.src-hi{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.chip.src-md{background:var(--bg);color:var(--muted)}
+
+/* OCR 讀包裝標示 */
+.ocr-box{border:1px dashed var(--line);border-radius:var(--radius-sm);padding:11px 12px;margin-top:8px}
+.ocr-prog{font-size:12.5px;color:var(--muted);margin-top:7px}
+.ocr-hit{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px;font-size:13.5px}
+.ocr-hit .lbl{color:var(--muted);font-weight:700;font-size:12.5px}
+.ocr-raw{max-height:96px;overflow:auto;background:var(--bg);border-radius:6px;
+  padding:7px 9px;font-size:11.5px;color:var(--muted);white-space:pre-wrap;margin-top:7px;line-height:1.5}
+
 /* 貓咪選擇列 */
 .cat-bar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
 .cat-chip{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--line);
@@ -117,10 +223,10 @@ th{font-size:12px;color:var(--muted);font-weight:700}
   box-shadow:var(--shadow);min-height:84px;justify-content:center}
 .quick-btn:active{transform:scale(.97)}
 .quick-btn:hover{border-color:var(--accent);box-shadow:var(--shadow-hover)}
-.quick-btn .qi{font-size:28px;line-height:1}
-.quick-btn .ql{font-size:14.5px;font-weight:800;color:var(--ink)}
+.quick-btn .qi{width:38px;height:38px}
+.quick-btn .ql{font-size:14.5px;font-weight:800;color:var(--ink);margin-top:2px}
 .quick-btn .qc{font-size:12px;color:var(--muted)}
-@media(max-width:400px){.quick-btn .qi{font-size:24px}.quick-btn{min-height:76px;padding:12px 4px 10px}}
+@media(max-width:400px){.quick-btn .qi{width:33px;height:33px}.quick-btn{min-height:76px;padding:12px 4px 10px}}
 
 /* 進度條 */
 .meter{margin:10px 0 4px}
@@ -140,7 +246,7 @@ th{font-size:12px;color:var(--muted);font-weight:700}
 .rec-list li{display:flex;align-items:flex-start;gap:10px;padding:10px 2px;
   border-bottom:1px solid var(--line)}
 .rec-list li:last-child{border-bottom:none}
-.rec-ico{font-size:20px;line-height:1.3;flex:none;width:28px;text-align:center}
+.rec-ico{flex:none;width:26px;height:26px;margin-top:1px}
 .rec-main{flex:1;min-width:0}
 .rec-title{font-size:14.5px;font-weight:700;color:var(--ink)}
 .rec-title .rc-cat{font-weight:600;color:var(--muted);font-size:12.5px;margin-left:6px}
@@ -156,7 +262,7 @@ th{font-size:12px;color:var(--muted);font-weight:700}
 .bottom-nav button{flex:1;border:none;background:none;font-family:inherit;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px 7px;
   font-size:11.5px;font-weight:700;color:var(--muted)}
-.bottom-nav button .bi{font-size:20px;line-height:1.15}
+.bottom-nav button .bi{width:21px;height:21px}
 .bottom-nav button.active{color:var(--accent)}
 @media(min-width:761px){.bottom-nav{display:none}.wrap{padding-bottom:40px}.toast{bottom:32px}}
 @media(max-width:760px){.tabs{display:none}}
@@ -191,14 +297,45 @@ th{font-size:12px;color:var(--muted);font-weight:700}
 .opt.danger.active{border-color:var(--danger);background:var(--danger)}
 .opt.sm{font-size:13px;padding:5px 11px;min-height:32px}
 
-/* 便況評分 */
-.score-row{display:flex;gap:5px;flex-wrap:wrap}
-.score-btn{flex:1;min-width:38px;border:1.5px solid var(--line);background:#fff;
-  border-radius:var(--radius-sm);padding:7px 2px;text-align:center;cursor:pointer;font-family:inherit}
-.score-btn b{display:block;font-size:16px;color:var(--ink)}
-.score-btn span{display:block;font-size:10.5px;color:var(--muted);line-height:1.3}
-.score-btn.active{border-color:var(--accent);background:var(--accent-soft)}
+/* 便況評分：用形狀圖對照，不必背文字 */
+.score-row{display:flex;gap:5px}
+.score-btn{flex:1;min-width:0;border:1.5px solid var(--line);background:#fff;
+  border-radius:var(--radius-sm);padding:7px 2px 5px;text-align:center;cursor:pointer;
+  font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px}
+.score-btn .ps-shape{display:block;width:26px;height:26px;color:#9a7b58}
+.score-btn .ps-shape svg{display:block;width:100%;height:100%}
+.score-btn b{display:block;font-size:13px;color:var(--muted);font-weight:800;line-height:1}
+.score-btn.ideal{border-color:#bcd9cb;background:var(--ok-soft)}
+.score-btn.ideal b{color:var(--ok)}
+.score-btn.active{border-color:var(--accent);background:var(--accent-soft);border-width:2px}
 .score-btn.active b{color:var(--accent)}
+.score-btn.active .ps-shape{color:var(--accent)}
+html[data-theme="dark"] .score-btn:not(.active):not(.ideal){background:#242c36}
+html[data-theme="dark"] .score-btn .ps-shape{color:#c39c73}
+/* :not(.active) 不能省——否則「理想範圍」的綠框會蓋掉選取框，深色下看不出選了哪個 */
+html[data-theme="dark"] .score-btn.ideal:not(.active){background:var(--ok-soft);border-color:#2c5a45}
+.score-note{font-size:12.5px;color:var(--muted);margin-top:7px;line-height:1.6}
+.score-note b{color:var(--ink);margin-right:7px}
+/* 便況小提醒：不是警告，是衛教。有些貓本來就偏乾／偏軟。 */
+.score-tip{display:block;margin-top:5px;padding-top:5px;border-top:1px dashed var(--line);
+  color:var(--muted);font-weight:600}
+.score-note .ok-tag{display:inline-block;margin-left:7px;padding:1px 8px;border-radius:var(--radius-pill);
+  background:var(--ok-soft);color:var(--ok);font-size:11.5px;font-weight:700}
+@media(max-width:360px){.score-btn .ps-shape{width:22px;height:22px}.score-row{gap:3px}}
+
+/* 保健品／用藥
+   ------------------------------------------------------------
+   刻意的設計：這一區預設是「查詢用」不是「待辦用」。
+   每日型不打勾也不會被催（remind 預設 false），
+   週期型才會在到期時出現提醒——因為那種一個月一次的最容易忘。 */
+.supp-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.supp-line .sl-label{font-size:12px;font-weight:700;color:var(--muted);flex:none;min-width:34px}
+/* 劑量是次要資訊，用半透明弱化；但別壓太低——12.5px 的字在選中的綠底上，
+   opacity .72 時對比只剩 3.42:1，.85 才有餘裕（見 _test/test_contrast.mjs） */
+.opt .s-dose{font-weight:600;opacity:.85;font-size:12.5px;margin-left:4px}
+.sc-meta{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-top:3px}
+.sc-meta.due{color:var(--warn)}
+html[data-theme="dark"] .sc-meta.due{color:var(--warn)}
 
 /* 計算預覽 */
 .calc-preview{background:var(--accent-soft);border-radius:var(--radius-sm);
@@ -239,9 +376,9 @@ th{font-size:12px;color:var(--muted);font-weight:700}
 <body>
 <div class="wrap">
   <header class="app">
-    <h1>🐾 貓咪照護日誌</h1>
+    <h1><span class="ico" id="brandIcon" style="width:24px;height:24px"></span><span id="brandName">喵日誌</span></h1>
     <span class="sub">大小便・飲食飲水・體重</span>
-    <span style="flex:1"></span>
+    <span style="flex:1;min-width:4px"></span>
     <button class="sync-pill no-print" id="syncPill" onclick="UI.go('settings');setTimeout(()=>document.getElementById('secSync').scrollIntoView({behavior:'smooth'}),60)">
       <span class="sdot"></span><span id="syncPillText">未同步</span>
     </button>
@@ -273,29 +410,177 @@ th{font-size:12px;color:var(--muted);font-weight:700}
    資料：localStorage（本機）＋可選 Google 試算表同步（Apps Script）
    ============================================================ */
 
+/* ============================================================
+   圖示：內嵌 SVG（不用 emoji——emoji 長相由各家手機決定，
+   同一支工具在 iPhone／Android／電腦上會變三種樣子）
+   風格：圓潤粗筆、少細節，維持可愛感。viewBox 一律 0 0 24 24。
+   ============================================================ */
+const ICONS = {
+  /* 記錄類型 */
+  poop:'<path d="M9.4 7.2c-.6-1.5.3-3.2 1.9-3.6.5-.1.7.4.5.8-.5.9-.2 1.9.7 2.4l1.2.7c.9.5 1.3 1.6 1 2.5H9.9c-.6-.8-.9-1.9-.5-2.8z"/><path d="M7.6 10h9.2c1.3 0 2.3 1 2.3 2.2 0 .6-.2 1.1-.6 1.5.9.3 1.5 1.1 1.5 2.1 0 1.2-1 2.2-2.3 2.2H6.3C5 18 4 17 4 15.8c0-1 .6-1.8 1.5-2.1-.4-.4-.6-.9-.6-1.5C4.9 11 5.9 10 7.6 10z"/><circle cx="9.6" cy="13.7" r="1.05" fill="rgba(0,0,0,.34)"/><circle cx="14.4" cy="13.7" r="1.05" fill="rgba(0,0,0,.34)"/>',
+  pee:'<path d="M12 3.2c3.4 4 5.8 7 5.8 9.7A5.8 5.8 0 0 1 12 18.7a5.8 5.8 0 0 1-5.8-5.8C6.2 10.2 8.6 7.2 12 3.2z"/>',
+  feed:'<path d="M3.6 11h16.8c.5 0 .8.4.7.9A9.2 9.2 0 0 1 12 19.4 9.2 9.2 0 0 1 2.9 11.9c-.1-.5.2-.9.7-.9z"/><circle cx="8.4" cy="7.6" r="1.7"/><circle cx="12" cy="6.3" r="1.7"/><circle cx="15.6" cy="7.6" r="1.7"/>',
+  /* 喝水＝水碗（刻意不用水滴，水滴留給「小便」，兩者形狀才不會撞） */
+  drink:'<path d="M2.4 9.6h19.2c.6 0 1 .5.9 1.1l-.7 4.1A7.4 7.4 0 0 1 14.5 21h-5A7.4 7.4 0 0 1 2.2 14.8l-.7-4.1c-.1-.6.3-1.1.9-1.1z"/><path d="M4.6 12.2c1.5 0 1.5 1.3 3 1.3s1.5-1.3 3-1.3 1.5 1.3 3 1.3 1.5-1.3 3-1.3 1.5 1.3 3 1.3l-.3 1.9c-1.3 0-1.4-1.2-2.7-1.2s-1.5 1.3-3 1.3-1.5-1.3-3-1.3-1.5 1.3-3 1.3-1.4-1.2-2.7-1.2z" fill="rgba(0,0,0,.34)"/><path d="M12 2.6c1.3 1.6 2 2.7 2 3.6a2 2 0 1 1-4 0c0-.9.7-2 2-3.6z"/>',
+  /* 體重＝踏板式體重計（俯視）：底座＋顯示窗 */
+  weight:'<rect x="2.2" y="4.6" width="19.6" height="14.8" rx="3.2"/><rect x="7.4" y="7.6" width="9.2" height="5.2" rx="1.6" fill="rgba(0,0,0,.34)"/><rect x="9" y="9.5" width="6" height="1.5" rx=".75"/><rect x="5.4" y="15.4" width="4.6" height="1.8" rx=".9" fill="rgba(0,0,0,.34)"/><rect x="14" y="15.4" width="4.6" height="1.8" rx=".9" fill="rgba(0,0,0,.34)"/>',
+  event:'<path d="M10.7 3.6a1.5 1.5 0 0 1 2.6 0l8.1 14.5a1.5 1.5 0 0 1-1.3 2.2H3.9a1.5 1.5 0 0 1-1.3-2.2z"/><rect x="10.9" y="8.4" width="2.2" height="6" rx="1.1" fill="rgba(0,0,0,.34)"/><circle cx="12" cy="17.1" r="1.3" fill="rgba(0,0,0,.34)"/>',
+  /* 保健品／用藥＝斜放的膠囊，中間一條分隔線（不用十字或針筒——十字像醫院、針筒嚇人） */
+  supp:'<rect x="1.4" y="8.3" width="21.2" height="7.4" rx="3.7" transform="rotate(-45 12 12)"/><rect x="11" y="8.3" width="2" height="7.4" transform="rotate(-45 12 12)" fill="rgba(0,0,0,.34)"/><circle cx="8.4" cy="15.6" r="1.15" fill="rgba(0,0,0,.34)"/>',
+  /* 導覽 */
+  home:'<path d="M11.1 3.2a1.4 1.4 0 0 1 1.8 0l7.7 6.5c.3.3.4.7.2 1.1-.2.4-.6.6-1 .6H19v7.9c0 .9-.7 1.6-1.6 1.6h-3v-5.2h-4.8v5.2h-3c-.9 0-1.6-.7-1.6-1.6v-7.9H4.2a1.1 1.1 0 0 1-.7-2z"/>',
+  list:'<rect x="4.3" y="2.9" width="15.4" height="18.2" rx="2.4"/><rect x="7.3" y="7" width="9.4" height="1.9" rx=".95" fill="rgba(0,0,0,.34)"/><rect x="7.3" y="11.1" width="9.4" height="1.9" rx=".95" fill="rgba(0,0,0,.34)"/><rect x="7.3" y="15.2" width="6" height="1.9" rx=".95" fill="rgba(0,0,0,.34)"/>',
+  chart:'<rect x="3" y="12.6" width="4.4" height="8.4" rx="1.6"/><rect x="9.8" y="7.4" width="4.4" height="13.6" rx="1.6"/><rect x="16.6" y="3.2" width="4.4" height="17.8" rx="1.6"/>',
+  report:'<rect x="4.2" y="4" width="15.6" height="17" rx="2.4"/><rect x="8.4" y="2" width="7.2" height="4.1" rx="1.6"/><rect x="7.6" y="10.2" width="8.8" height="1.8" rx=".9" fill="rgba(0,0,0,.34)"/><rect x="7.6" y="14" width="6" height="1.8" rx=".9" fill="rgba(0,0,0,.34)"/>',
+  gear:'<path d="M9.9 2.6h4.2l.4 2.3 1.6.9 2.2-.8 2.1 3.6-1.8 1.5v1.8l1.8 1.5-2.1 3.6-2.2-.8-1.6.9-.4 2.3H9.9l-.4-2.3-1.6-.9-2.2.8-2.1-3.6 1.8-1.5v-1.8L3.6 8.6l2.1-3.6 2.2.8 1.6-.9z"/><circle cx="12" cy="12" r="3.1" fill="rgba(0,0,0,.34)"/>',
+  /* 其他 */
+  cat:'<path d="M4.6 11.3V3.9c0-.6.7-1 1.2-.6l3.6 2.7a10.4 10.4 0 0 1 5.2 0l3.6-2.7c.5-.4 1.2 0 1.2.6v7.4a7.4 7.4 0 0 1-14.8 0z"/><circle cx="9.3" cy="11.6" r="1.35" fill="rgba(0,0,0,.34)"/><circle cx="14.7" cy="11.6" r="1.35" fill="rgba(0,0,0,.34)"/><path d="M12 16.2a2.4 2.4 0 0 1-2.2-1.5h4.4a2.4 2.4 0 0 1-2.2 1.5z" fill="rgba(0,0,0,.34)"/>',
+  paw:'<ellipse cx="6.4" cy="9.4" rx="2.3" ry="2.9"/><ellipse cx="10.5" cy="6.4" rx="2.3" ry="3.1"/><ellipse cx="15.1" cy="6.7" rx="2.3" ry="3.1"/><ellipse cx="19" cy="10.2" rx="2.2" ry="2.8"/><path d="M12.4 12.2c2.9 0 5.4 2 5.4 4.4 0 2-1.7 3.3-3.8 3.3-1 0-1.4-.3-2.4-.3s-1.4.3-2.4.3c-2.1 0-3.8-1.3-3.8-3.3 0-2.4 2.5-4.4 5.4-4.4z"/>',
+  fire:'<path d="M12.6 2.4c3.4 3.3 5.6 6 5.6 9.6A6.2 6.2 0 0 1 12 18.2a6.2 6.2 0 0 1-6.2-6.2c0-1.7.6-3 1.6-4.3.2 1.3.9 2.2 1.9 2.5.5-3 1.6-5.3 3.3-7.8z"/><path d="M12 19.9c-1.7 0-3-1.1-3-2.7 0-1.4 1.1-2.4 3-4.4 1.9 2 3 3 3 4.4 0 1.6-1.3 2.7-3 2.7z" fill="rgba(0,0,0,.34)" opacity=".6"/>',
+  cloud:'<path d="M7.2 19.4a4.7 4.7 0 0 1-.6-9.3 6 6 0 0 1 11.4 1.4 4 4 0 0 1-.9 7.9z"/>',
+  save:'<path d="M12 2.9c.7 0 1.3.6 1.3 1.3v7.5l2.1-2.1a1.3 1.3 0 0 1 1.9 1.8l-4.3 4.3a1.3 1.3 0 0 1-1.9 0L6.7 11.4a1.3 1.3 0 0 1 1.9-1.8l2.1 2.1V4.2c0-.7.6-1.3 1.3-1.3z"/><path d="M4.4 15.6c.7 0 1.3.6 1.3 1.3v1.5h12.6v-1.5a1.3 1.3 0 0 1 2.6 0v2.3c0 .9-.7 1.7-1.7 1.7H4.8c-1 0-1.7-.8-1.7-1.7v-2.3c0-.7.6-1.3 1.3-1.3z"/>',
+  book:'<path d="M3.4 4.6c0-.7.6-1.3 1.3-1.2 2.3.1 5 .6 6.5 1.8v14.2c-1.5-1.2-4.2-1.7-6.5-1.8a1.3 1.3 0 0 1-1.3-1.2z"/><path d="M20.6 4.6c0-.7-.6-1.3-1.3-1.2-2.3.1-5 .6-6.5 1.8v14.2c1.5-1.2 4.2-1.7 6.5-1.8a1.3 1.3 0 0 0 1.3-1.2z" opacity=".72"/>',
+  star:'<path d="M12 2.7l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.7 6.4 19.9l1.3-6.3L2.9 9.3l6.4-.7z"/>',
+  search:'<circle cx="10.6" cy="10.6" r="6.4" fill="none" stroke="currentColor" stroke-width="2.5"/><rect x="14.9" y="15.9" width="6.4" height="2.7" rx="1.35" transform="rotate(43 14.9 15.9)"/>',
+  camera:'<path d="M4.4 6.8h2.9l1.2-2c.2-.4.6-.6 1.1-.6h4.8c.5 0 .9.2 1.1.6l1.2 2h2.9c1.3 0 2.4 1 2.4 2.3v8.3c0 1.3-1.1 2.3-2.4 2.3H4.4C3.1 19.7 2 18.7 2 17.4V9.1c0-1.3 1.1-2.3 2.4-2.3z"/><circle cx="12" cy="13.1" r="4.1" fill="rgba(0,0,0,.34)"/><circle cx="12" cy="13.1" r="2.3"/>',
+  link:'<path d="M9.6 13.2a3.9 3.9 0 0 1 0-5.5l3-3a3.9 3.9 0 0 1 5.5 5.5l-1.4 1.4a1.3 1.3 0 0 1-1.9-1.9l1.4-1.4a1.3 1.3 0 0 0-1.8-1.8l-3 3a1.3 1.3 0 0 0 0 1.8 1.3 1.3 0 0 1-1.8 1.9z"/><path d="M14.4 10.8a3.9 3.9 0 0 1 0 5.5l-3 3a3.9 3.9 0 0 1-5.5-5.5l1.4-1.4a1.3 1.3 0 0 1 1.9 1.9l-1.4 1.4a1.3 1.3 0 0 0 1.8 1.8l3-3a1.3 1.3 0 0 0 0-1.8 1.3 1.3 0 0 1 1.8-1.9z"/>',
+  edit:'<path d="M14.9 4.2l4.9 4.9-9.3 9.3-4.9-4.9z"/><path d="M17 2.1a1.6 1.6 0 0 1 2.3 0l2.6 2.6a1.6 1.6 0 0 1 0 2.3l-1 1-4.9-4.9z"/><path d="M4.4 15.1l4.5 4.5-5.5 1z"/>',
+  close:'<rect x="4.3" y="10.6" width="15.4" height="2.8" rx="1.4" transform="rotate(45 12 12)"/><rect x="4.3" y="10.6" width="15.4" height="2.8" rx="1.4" transform="rotate(-45 12 12)"/>',
+  check:'<path d="M9.6 17.6a1.5 1.5 0 0 1-1.1-.5l-4-4.2a1.5 1.5 0 0 1 2.2-2.1l2.9 3.1 7.7-8a1.5 1.5 0 0 1 2.2 2.1l-8.8 9.1a1.5 1.5 0 0 1-1.1.5z"/>',
+  plus:'<rect x="10.4" y="3.6" width="3.2" height="16.8" rx="1.6"/><rect x="3.6" y="10.4" width="16.8" height="3.2" rx="1.6"/>',
+  repeat:'<path d="M5.6 11.2a6.4 6.4 0 0 1 10.7-4.7l1.4-1.4c.5-.5 1.4-.2 1.4.6v4.5c0 .4-.4.8-.8.8h-4.5c-.8 0-1.1-.9-.6-1.4l1.4-1.4a3.9 3.9 0 0 0-6.5 2.9 1.3 1.3 0 0 1-2.5.1z"/><path d="M18.4 12.8a6.4 6.4 0 0 1-10.7 4.7l-1.4 1.4c-.5.5-1.4.2-1.4-.6v-4.5c0-.4.4-.8.8-.8h4.5c.8 0 1.1.9.6 1.4l-1.4 1.4a3.9 3.9 0 0 0 6.5-2.9 1.3 1.3 0 0 1 2.5-.1z"/>',
+  moon:'<path d="M20.1 14.6A8.6 8.6 0 0 1 9.4 3.9a8.9 8.9 0 1 0 10.7 10.7z"/>',
+  sun:'<circle cx="12" cy="12" r="4.6"/><g><rect x="10.8" y="1.4" width="2.4" height="4" rx="1.2"/><rect x="10.8" y="18.6" width="2.4" height="4" rx="1.2"/><rect x="1.4" y="10.8" width="4" height="2.4" rx="1.2"/><rect x="18.6" y="10.8" width="4" height="2.4" rx="1.2"/><rect x="3.6" y="4.4" width="2.4" height="4" rx="1.2" transform="rotate(-45 4.8 6.4)"/><rect x="18" y="15.6" width="2.4" height="4" rx="1.2" transform="rotate(-45 19.2 17.6)"/><rect x="15.6" y="3.6" width="4" height="2.4" rx="1.2" transform="rotate(45 17.6 4.8)"/><rect x="4.4" y="18" width="4" height="2.4" rx="1.2" transform="rotate(45 6.4 19.2)"/></g>',
+  auto:'<circle cx="12" cy="12" r="9.1"/><path d="M12 2.9a9.1 9.1 0 0 1 0 18.2z" fill="rgba(0,0,0,.34)"/>',
+  trash:'<path d="M6.2 7.6h11.6l-.9 11.5a2 2 0 0 1-2 1.8H9.1a2 2 0 0 1-2-1.8z"/><rect x="4.2" y="4.4" width="15.6" height="2.6" rx="1.3"/><rect x="9.2" y="2.2" width="5.6" height="2.6" rx="1.3"/>',
+  print:'<rect x="6.4" y="2.6" width="11.2" height="5" rx="1.2"/><path d="M4.4 8.6h15.2c1.2 0 2.2 1 2.2 2.2v4.6c0 1.2-1 2.2-2.2 2.2h-1.6v-2.8H6v2.8H4.4c-1.2 0-2.2-1-2.2-2.2v-4.6c0-1.2 1-2.2 2.2-2.2z"/><rect x="7.4" y="14.6" width="9.2" height="6.8" rx="1.2"/>',
+  copy:'<rect x="8.4" y="2.6" width="12.4" height="15.2" rx="2.2"/><path d="M5.6 5.4v13.2c0 .7.6 1.3 1.3 1.3h9.5v.5c0 .7-.6 1.3-1.3 1.3H5.3c-1.2 0-2.1-1-2.1-2.1V7.5c0-1.2.9-2.1 2.1-2.1z"/>',
+  target:'<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="4.4" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="1.7"/>'
+};
+/* icon('poop', 20) → 一段可直接塞進 HTML 的 SVG；color 預設吃 currentColor */
+function icon(name, size, color){
+  const p = ICONS[name] || ICONS.paw;
+  const s = size || 20;
+  return `<span class="ico" style="width:${s}px;height:${s}px${color?';color:'+color:''}" aria-hidden="true">`+
+    `<svg viewBox="0 0 24 24" fill="currentColor">${p}</svg></span>`;
+}
+/* 彩色圓底版本（快速打點大按鈕用） */
+function iconRound(name, size, bg){
+  const p = ICONS[name] || ICONS.paw;
+  const s = size || 38;
+  return `<span class="ico-round" style="width:${s}px;height:${s}px;background:${bg}" aria-hidden="true">`+
+    `<svg viewBox="0 0 24 24" fill="#fff">${p}</svg></span>`;
+}
+
 /* ---------- 常數 ---------- */
+const APP_VERSION = 'v1.6';
+const APP_DATE = '2026-08-04';
+/* 工具名稱可自訂：預設給一個通用名字，每個人可以改成自家貓的名字。
+   存在本機設定，不隨雲端同步（同一份資料在不同裝置可以叫不同名字）。 */
+const DEFAULT_APP_NAME = '喵日誌';
+const APP_NAME_KEY = 'catcare_appname';
 const LS_KEY = 'catcare_v1';
 const REC_TYPES = {
-  poop:  { icon:'💩', label:'大便' },
-  pee:   { icon:'💧', label:'小便' },
-  feed:  { icon:'🍚', label:'餵食' },
-  drink: { icon:'🚰', label:'喝水' },
-  weight:{ icon:'⚖️', label:'體重' },
-  event: { icon:'⚠️', label:'異常/事件' }
+  poop:  { icon:'poop',   color:'var(--i-poop)',   label:'大便' },
+  pee:   { icon:'pee',    color:'var(--i-pee)',    label:'小便' },
+  feed:  { icon:'feed',   color:'var(--i-feed)',   label:'餵食' },
+  drink: { icon:'drink',  color:'var(--i-drink)',  label:'喝水' },
+  weight:{ icon:'weight', color:'var(--i-weight)', label:'體重' },
+  event: { icon:'event',  color:'var(--i-event)',  label:'異常/事件' },
+  supp:  { icon:'supp',   color:'var(--i-supp)',   label:'保健品/用藥' }
 };
+/* 便況 1–7 分：描述對齊 Purina 的 Faecal Scoring Chart（貓狗通用，7 分制）。
+   該表以 2 分為理想；貓實務上 2–3 分都算可接受，4 分以上就值得留意。
+   來源：https://vetcentre.purina.co.uk/ 的 Faecal score chart（2026-08 查證）
+   每一分都配一個 SVG 形狀，讓人用「看的」對照，不必背文字。
+   tip：v1.6 加上的衛教小字（只有 1 分有）。刻意「不」做成提醒卡——
+   吃高肉低纖飲食（凍乾、無穀高蛋白乾糧、主食罐）的貓，殘渣少、便本來就偏乾偏小，
+   長期都是 1 分卻完全健康的很常見。單看分數提醒會一直誤報，
+   真正該警覺的是「間隔變長」，那個已經由 Alerts 的 >48h 規則涵蓋了。 */
 const POOP_SCORES = [
-  {v:1,l:'很硬顆粒'},{v:2,l:'成形偏硬'},{v:3,l:'理想成形'},{v:4,l:'軟但成形'},
-  {v:5,l:'軟糊'},{v:6,l:'糊狀'},{v:7,l:'水狀'}
+  {v:1, l:'硬顆粒', d:'很硬很乾，一顆一顆分開，排便費力',
+   tip:'有些貓本來就這樣——吃高肉低纖（凍乾、無穀乾糧、主食罐）殘渣少，便就會乾而小。真正要留意的是「排便間隔變長、蹲很久卻上不太出來、量突然變少」，只是形狀偏硬通常不用緊張。持續偏乾時可以多加濕食或增加飲水。',
+   s:'<circle cx="7.4" cy="8.4" r="2.7"/><circle cx="14.2" cy="7.2" r="2.4"/><circle cx="17.2" cy="13.2" r="2.7"/><circle cx="9.2" cy="15.4" r="2.5"/>'},
+  {v:2, l:'分節條狀', d:'硬但不僵，看得出一節一節，撿起來幾乎不留痕',
+   s:'<rect x="1.8" y="9" width="6.8" height="6.4" rx="3.2"/><rect x="9" y="9" width="6.4" height="6.4" rx="3.2"/><rect x="15.8" y="9" width="6.4" height="6.4" rx="3.2"/>'},
+  {v:3, l:'平滑條狀', d:'一整條、表面略濕，撿起來會留一點痕但不散',
+   s:'<rect x="2.4" y="9.4" width="19.2" height="5.6" rx="2.8"/>'},
+  {v:4, l:'濕軟條狀', d:'很濕、還是條狀，但撿起來會散掉',
+   s:'<path d="M5.6 8.2h12.8a3.6 3.6 0 0 1 0 7.2H5.6a3.6 3.6 0 0 1 0-7.2z"/><circle cx="8.6" cy="17.8" r="1.2"/><circle cx="14.8" cy="18.2" r="1"/>'},
+  {v:5, l:'軟糊成堆', d:'很濕但還看得出形狀，堆成一坨而不是一條',
+   s:'<ellipse cx="12" cy="9.4" rx="3.6" ry="2.3"/><path d="M4.2 16.8c0-3.7 3.5-6.6 7.8-6.6s7.8 2.9 7.8 6.6a1.4 1.4 0 0 1-1.4 1.4H5.6a1.4 1.4 0 0 1-1.4-1.4z"/>'},
+  {v:6, l:'糊狀無形', d:'有質地但沒有形狀，一塊一塊或散點',
+   s:'<ellipse cx="7.8" cy="11" rx="4.3" ry="3.1"/><ellipse cx="16.2" cy="13.8" rx="3.7" ry="2.7"/><ellipse cx="12.8" cy="8.2" rx="2.5" ry="1.9"/>'},
+  {v:7, l:'水狀', d:'完全是水，攤成一灘',
+   s:'<ellipse cx="12" cy="15" rx="9.4" ry="2.6"/><ellipse cx="12" cy="10.6" rx="5" ry="1.9"/><circle cx="3.4" cy="10.2" r="1.2"/><circle cx="20.4" cy="9.6" r="1"/>'}
 ];
+const POOP_IDEAL = [2,3];   // 理想／可接受區間
 const POOP_COLORS = ['正常棕','深棕/黑','偏黃','偏綠','紅（血）','灰白'];
 const EVENT_KINDS = ['嘔吐','食慾差','精神差','吃藥/驅蟲','其他'];
 const FOOD_TYPES = ['乾糧','主食罐','副食罐/餐包','零食','鮮食/自製','處方糧'];
+/* 各類型的代表色（食物庫卡片用） */
+const FOOD_TYPE_META = {
+  '乾糧':'#c8802f','主食罐':'#4aa3c4','副食罐/餐包':'#5a9e7a',
+  '零食':'#c07ba8','鮮食/自製':'#d9694f','處方糧':'#7b8fa8'
+};
+/* 新增食物時的「典型起點」：只在欄位還空著時自動帶入，永遠可以改。
+   數值為市售常見範圍的中位概念值，不是任何特定品牌的標示。 */
+const FOOD_TYPE_DEFAULTS = {
+  '乾糧':        {moisturePct:10, kcalPer100g:380, defaultGrams:20},
+  '主食罐':      {moisturePct:78, kcalPer100g:100, defaultGrams:100},
+  '副食罐/餐包': {moisturePct:85, kcalPer100g:60,  defaultGrams:70},
+  '零食':        {moisturePct:8,  kcalPer100g:400, defaultGrams:5},
+  '鮮食/自製':   {moisturePct:72, kcalPer100g:130, defaultGrams:80},
+  '處方糧':      {moisturePct:10, kcalPer100g:370, defaultGrams:20}
+};
+/* 每日熱量需求 DER ＝ RER × 需求因子。
+   因子區間參考 Royal Canin 台灣的貓熱量計算說明（2026-08 查證）：
+   已結紮 1.2–1.4、未結紮 1.4–1.6、發育期 2–2.5、過胖 0.8–1、過瘦 1.2–1.8、
+   11 歲以上高齡 1.1–1.6（高齡變異大，故不另設固定選項，改在說明提醒問獸醫）。
+   ※ 特別補上「已絕育・室內活動量低 ×1.0」：這類貓不需要減重，但用 1.2 會把目標抓太高。 */
 const DER_FACTORS = [
-  {v:1.0,l:'減重中 ×1.0'},{v:1.2,l:'已絕育成貓 ×1.2'},{v:1.4,l:'未絕育成貓 ×1.4'},
-  {v:1.6,l:'活動量大 ×1.6'},{v:2.5,l:'幼貓(4月內) ×2.5'},{v:2.0,l:'幼貓(4–12月) ×2.0'}
+  {v:0.8,l:'減重中／過胖 ×0.8'},
+  {v:1.0,l:'已絕育・室內活動量低 ×1.0'},
+  {v:1.2,l:'已絕育成貓（一般）×1.2'},
+  {v:1.4,l:'已絕育但活潑／未絕育成貓 ×1.4'},
+  {v:1.6,l:'未絕育・活動量大 ×1.6'},
+  {v:1.8,l:'需增重／過瘦 ×1.8'},
+  {v:2.0,l:'幼貓 4–12 月 ×2.0'},
+  {v:2.5,l:'幼貓 4 月內 ×2.5'}
 ];
+const DER_SOURCE_NOTE = '因子區間參考 Royal Canin 台灣「貓熱量計算教學」（2026-08 查證）：已結紮 1.2–1.4、未結紮 1.4–1.6、發育期 2–2.5、過胖 0.8–1、過瘦 1.2–1.8。11 歲以上高齡約 1.1–1.6、個體差異大，請問你的獸醫。';
+/* ------------------------------------------------------------
+   保健品／用藥（v1.6）
+   ------------------------------------------------------------
+   兩種節奏，刻意分開處理：
+   - daily：魚油、益生菌、潔牙粉、每日藥。今日頁點一下就記，預設不提醒。
+            沒點不代表「漏給」，只代表「沒記」——所以預設不催，免得變成負擔。
+   - cycle：滴劑、驅蟲、長效針。價值不在「今天給了嗎」，而在「上次什麼時候、該不該了」。
+            預設會在到期時提醒，因為這種一個月一次的最容易忘。
+   每個品項自己帶「常用劑量」，記錄時直接沿用 → 都吃一樣的人按一下就結束。
+   ------------------------------------------------------------ */
+const SUPP_UNITS = ['顆','粒','包','ml','滴','泵','g','匙','支','次'];
+const SUPP_KINDS = [
+  {v:'daily', l:'每天／經常吃', d:'今日頁點一下就記錄，預設不會催你'},
+  {v:'cycle', l:'週期性（幾天一次）', d:'顯示「上次◯◯・已幾天」，到期才提醒'}
+];
+const SUPP_DEFAULT_EVERY = 30;   // 新增週期品項時的預設間隔（滴劑、驅蟲多半一個月一次）
 const CAT_COLORS = ['#262b31','#8b949c','#c8802f','#2c6e7f','#b5761a','#2e7d5b','#7b5aa6','#b4453c','#4a6fa5'];  // 黑、灰、橘 在前（常見毛色）
 const UNKNOWN_CAT = '__unknown__';
+
+/* ============================================================
+   常見市售食物參考清單
+   ------------------------------------------------------------
+   每一筆的水分％與 kcal/100g 都是 2026-08 實際打開來源網頁讀到的，
+   沒有任何一個數字是估的。conf 標示可信度：
+     high   = 品牌官方網站直接讀到
+     medium = 台灣代理商／零售通路商品頁轉載的官方標示
+   caution 欄位是使用上要特別提醒的事（副食不能當主食、處方糧要問獸醫等）。
+   ※ 廠商會改配方、同系列不同口味數值也不同——這份是「省你打字的起點」，
+     不是權威值。畫面上一律要求使用者對照自己手上的包裝。
+   ============================================================ */
+const FOOD_LIBRARY = [{"id":"lib_ziwi_dry_chicken","name":"ZIWI 巔峰 風乾貓糧 雞肉","brand":"ZIWI 巔峰","type":"乾糧","moisturePct":14,"kcalPer100g":500,"defaultGrams":20,"src":"https://us.ziwipets.com/products/air-dried-chicken-recipe-for-cats","note":"官網 Moisture (max) 14.0%、5000 kcal ME/kg","conf":"high"},{"id":"lib_ziwi_dry_lamb","name":"ZIWI 巔峰 風乾貓糧 羊肉","brand":"ZIWI 巔峰","type":"乾糧","moisturePct":14,"kcalPer100g":495,"defaultGrams":20,"src":"https://us.ziwipets.com/products/air-dried-lamb-recipe-for-cats","note":"官網 Moisture (max) 14.0%、4950 kcal ME/kg","conf":"high"},{"id":"lib_core_turkey","name":"Wellness CORE 無穀成貓 火雞","brand":"Wellness CORE","type":"乾糧","moisturePct":10,"kcalPer100g":397.7,"defaultGrams":20,"src":"https://www.wellnesspetfood.com.tw/natural-cat-food/corer-original-original-deboned-turkey-turkey-meal-chicken-meal/","note":"台灣官網 水分 10.00% 以下、3977 千卡/千克 ME","conf":"high"},{"id":"lib_core_indoor","name":"Wellness CORE 無穀室內貓 深海魚","brand":"Wellness CORE","type":"乾糧","moisturePct":10,"kcalPer100g":327.7,"defaultGrams":20,"src":"https://www.wellnesspetfood.com.tw/natural-cat-food/core-indoor-indoor-salmon-herring/","note":"台灣官網 水分 10.0% 以下、3277 千卡/千克","conf":"high"},{"id":"lib_farmina_gc2","name":"Farmina N&D 無穀全齡貓 雞肉石榴","brand":"Farmina","type":"乾糧","moisturePct":8,"kcalPer100g":420.4,"defaultGrams":20,"src":"https://www.farmina.com/tw/eshop/cat-food/n&d-prime-feline/145-chicken-&-pomegranate-adult.html","note":"台灣官網 水分 8%、EM 4204 kcal/kg","conf":"high"},{"id":"lib_nutrience_indoor","name":"Nutrience 紐崔斯 室內成貓 雞肉","brand":"Nutrience","type":"乾糧","moisturePct":10,"kcalPer100g":380,"defaultGrams":20,"src":"https://nutrience.com/products/healthy-adult-indoor/","note":"品牌官網 Moisture (Max) 10.0%、3800 kcal/kg ME","conf":"high"},{"id":"lib_orijen_g8","name":"Orijen 渴望 愛貓守護 8","brand":"Orijen 渴望","type":"乾糧","moisturePct":10,"kcalPer100g":398,"defaultGrams":20,"src":"https://hansiangpets.com.tw/products/orijen-cat-food-guardian-8-formula","note":"台灣通路頁 水分 10%、3980 千卡/公斤（官網未公布熱量）","conf":"medium"},{"id":"lib_orijen_fit","name":"Orijen 渴望 鮮雞室內貓","brand":"Orijen 渴望","type":"乾糧","moisturePct":10,"kcalPer100g":371,"defaultGrams":20,"src":"https://hansiangpets.com.tw/products/orijen-cat-food-fit-and-trim","note":"台灣通路頁 水分 10%、3710 千卡/公斤","conf":"medium"},{"id":"lib_acana_indoor","name":"ACANA 愛肯拿 無穀高蛋白 室內貓","brand":"ACANA 愛肯拿","type":"乾糧","moisturePct":10,"kcalPer100g":363,"defaultGrams":20,"src":"https://haoyipets.com/products/cat-food-acana-highest-protein-indoor-cat","note":"台灣通路頁 水分 10%、3630 千卡/公斤","conf":"medium"},{"id":"lib_ziwi_can_chicken","name":"ZIWI 巔峰 鮮肉主食罐 雞肉","brand":"ZIWI 巔峰","type":"主食罐","moisturePct":78,"kcalPer100g":122.5,"defaultGrams":185,"src":"https://us.ziwipets.com/products/wet-canned-chicken-for-cats","note":"官網 Moisture (max) 78.0%、1225 kcal ME/kg（185g 罐 227 kcal）","conf":"high"},{"id":"lib_ziwi_can_beef","name":"ZIWI 巔峰 鮮肉主食罐 牛肉","brand":"ZIWI 巔峰","type":"主食罐","moisturePct":78,"kcalPer100g":112.5,"defaultGrams":185,"src":"https://ziwipets.com/products/wet-beef-cat-food","note":"官網 Moisture (max) 78.0%、1125 kcal ME/kg（185g 罐 208 kcal）","conf":"high"},{"id":"lib_macs_chicken","name":"MAC's 德國馬克 主食罐 雞肉+雞心","brand":"MAC's 瑪格","type":"主食罐","moisturePct":80,"kcalPer100g":95,"defaultGrams":200,"src":"https://www.catzoo.tw/product/detail/1502158","note":"通路頁成分分析 水分 80.0%、95 大卡/100g","conf":"medium"},{"id":"lib_macs_turkey","name":"MAC's 德國馬克 主食罐 火雞肉+火雞心","brand":"MAC's 瑪格","type":"主食罐","moisturePct":80,"kcalPer100g":89,"defaultGrams":200,"src":"https://www.catzoo.tw/product/detail/1502158","note":"通路頁成分分析 水分 80.0%、89 大卡/100g","conf":"medium"},{"id":"lib_dcs_duck","name":"汪喵星球 98% 鮮肉無膠主食罐 鴨肉","brand":"汪喵星球","type":"主食罐","moisturePct":73.6,"kcalPer100g":114,"defaultGrams":165,"src":"https://shop.petpark.com.tw/20664664","note":"通路頁 水分 73.6%、代謝能 114 kcal/100g","conf":"medium"},{"id":"lib_seeds_mc","name":"SEEDS 惜時 每客思主食罐 雞肉+白身鮪魚","brand":"SEEDS 惜時","type":"主食罐","moisturePct":78,"kcalPer100g":98,"defaultGrams":115,"src":"https://shop.petpark.com.tw/20658144","note":"通路頁 水分 78.0%、98 kcal/100g；同系列各口味不同","conf":"medium"},{"id":"lib_miaole_6","name":"喵樂 肉食控主食罐 #6 嫩雞旗魚","brand":"喵樂","type":"主食罐","moisturePct":80,"kcalPer100g":95,"defaultGrams":80,"src":"https://shop.petpark.com.tw/20843274","note":"通路頁 水分 80% 以下、95 kcal/100g","conf":"medium"},{"id":"lib_k9_chicken","name":"K9 Natural 鮮燉主食罐 嚴選雞肉","brand":"K9 / Feline Natural","type":"主食罐","moisturePct":82,"kcalPer100g":101.3,"defaultGrams":85,"src":"https://shop.petpark.com.tw/wp012398","note":"通路頁 水分(最多) 82.00%、1013 kcal/kg","conf":"medium"},{"id":"lib_applaws_chicken","name":"Applaws 雞胸肉湯罐","brand":"Applaws","type":"副食罐/餐包","moisturePct":80,"kcalPer100g":82.8,"defaultGrams":156,"src":"https://applaws.com/uk/products/chicken-breast-in-broth-5/","note":"官網 Moisture 80%、828 kcal/kg","conf":"high","caution":"官方標為 complementary food（副食），不能當唯一主食"},{"id":"lib_ciao_churu_tuna","name":"CIAO 啾嚕肉泥條 鮪魚","brand":"INABA 稻葉","type":"零食","moisturePct":91,"kcalPer100g":50,"defaultGrams":14,"src":"https://www.inaba-petfood.co.jp/product/detail/CIAO+%E3%81%A1%E3%82%85%EF%BD%9E%E3%82%8B/3112","note":"日本官網 水分 91.0% 以下、約 7 kcal/條（14g）","conf":"high"},{"id":"lib_ciao_churu_total","name":"CIAO 啾嚕 綜合營養食 鮪魚","brand":"INABA 稻葉","type":"零食","moisturePct":85,"kcalPer100g":92.9,"defaultGrams":14,"src":"https://www.inaba-petfood.co.jp/product/detail/CIAO+%E3%81%A1%E3%82%85%E3%80%9C%E3%82%8B/6498","note":"日本官網 水分 85.0% 以下、約 13 kcal/條（14g）","conf":"high"},{"id":"lib_dcs_fd_chicken","name":"汪喵星球 凍乾 安心雞胸肉","brand":"汪喵星球","type":"零食","moisturePct":2.5,"kcalPer100g":396,"defaultGrams":5,"src":"https://www.dogcatstar.com/product/mountainsnack/","note":"官網營養表 396 kcal/100g、水分 2.5%","conf":"high"},{"id":"lib_dcs_fd_duck","name":"汪喵星球 凍乾 櫻桃鴨胸肉","brand":"汪喵星球","type":"零食","moisturePct":2.5,"kcalPer100g":414,"defaultGrams":5,"src":"https://www.dogcatstar.com/product/mountainsnack/","note":"官網營養表 414 kcal/100g、水分 2.5%","conf":"high"},{"id":"lib_dcs_fd_beef","name":"汪喵星球 凍乾 頂級骰子牛","brand":"汪喵星球","type":"零食","moisturePct":2.5,"kcalPer100g":440,"defaultGrams":5,"src":"https://www.dogcatstar.com/product/mountainsnack/","note":"官網營養表 440 kcal/100g、水分 2.5%","conf":"high"},{"id":"lib_dcs_fd_lamb","name":"汪喵星球 凍乾 澳洲骰子羊","brand":"汪喵星球","type":"零食","moisturePct":2.5,"kcalPer100g":565,"defaultGrams":5,"src":"https://www.dogcatstar.com/product/mountainsnack/","note":"官網營養表 565 kcal/100g、水分 2.5%","conf":"high"},{"id":"lib_parkcat_fd_chicken","name":"貓侍 無敵 100% 原肉凍乾 強健活力雞","brand":"貓侍 ParkCat","type":"零食","moisturePct":5,"kcalPer100g":433,"defaultGrams":5,"src":"https://www.parkcat.com.tw/product/detail/2121794","note":"官網營養成分表 433 kcal/100g、水分 5%","conf":"high"},{"id":"lib_greenies","name":"Greenies 貓用潔牙餅","brand":"Greenies","type":"零食","moisturePct":10,"kcalPer100g":355.4,"defaultGrams":1.2,"src":"https://www.petsmart.com/cat/food-and-treats/treats/greeniesandtrade-feline-greenies-adult-cat-dental-treats---dental-care-natural-salmon-58853.html","note":"通路頁刊載官方標示 Moisture (max) 10.0%、3554 kcal ME/kg（1.4 kcal/顆，約 0.4 g/顆）","conf":"medium"},{"id":"lib_rc_renal_s","name":"Royal Canin 皇家 Renal Support S 腎臟","brand":"Royal Canin","type":"處方糧","moisturePct":8,"kcalPer100g":405.4,"defaultGrams":20,"src":"https://www.royalcanin.com/us/cats/products/vet-products/renal-support-s-4171","note":"美國官網 Moisture (max) 8.0%、4054 kcal ME/kg","conf":"high","caution":"美規標示；台灣通路多為 RF23 等品項，配方數值可能不同。處方糧須經獸醫指示使用"},{"id":"lib_rc_urinary_so","name":"Royal Canin 皇家 Urinary SO 泌尿","brand":"Royal Canin","type":"處方糧","moisturePct":8,"kcalPer100g":365.9,"defaultGrams":20,"src":"https://www.royalcanin.com/us/cats/products/vet-products/urinary-so-3901","note":"美國官網 Moisture (max) 8.0%、3659 kcal ME/kg","conf":"high","caution":"美規標示；台灣通路品項編碼可能不同。處方糧須經獸醫指示使用"},{"id":"lib_hills_kd","name":"Hill's 希爾思 k/d 腎臟保健 雞肉乾糧","brand":"Hill's 希爾思","type":"處方糧","moisturePct":8,"kcalPer100g":408.3,"defaultGrams":20,"src":"https://www.hills.com.tw/cat-food/pd-kd-feline-dry","note":"熱量取自台灣官網 4083 kcal/公斤；水分 8.0% max 取自 Chewy 商品頁（台灣官網未刊水分）","conf":"medium","caution":"水分與熱量分屬兩個來源。處方糧須經獸醫指示使用"}];
+const FOOD_LIB_VERIFIED = '2026-08';
 
 /* ---------- 小工具 ---------- */
 const $ = s => document.querySelector(s);
@@ -317,9 +602,15 @@ const DEFAULT_DB = () => ({
   version:1,
   cats:[],            // {id,name,color,birthYM,neutered,derFactor,waterMlPerKg,updatedAt,deleted}
   foods:[],           // {id,name,type,moisturePct,kcalPer100g,defaultGrams,updatedAt,deleted}
+  supps:[],           // {id,name,kind:'daily'|'cycle',dose,unit,everyDays,remind,note,updatedAt,deleted}
   records:[],         // {id,catId,ts,type,data:{},updatedAt,deleted}
   settings:{ syncUrl:'', syncKey:'', deviceName:'', lastPullAt:0, autoSync:true }
 });
+/* kind ↔ DB 陣列。新增種類時只要動這裡；
+   ※ 一定要「查得到才處理」，不能用 else 掃進 records——
+     否則未來版本新增的 kind 從雲端拉回來時，會被舊版當成記錄塞進去。 */
+const KIND_ARR = { cat:'cats', food:'foods', supp:'supps', record:'records' };
+function arrOfKind(kind){ const k=KIND_ARR[kind]; return k?DB[k]:null; }
 let DB = DEFAULT_DB();
 let PENDING = [];     // 待同步 [{kind,id}]
 
@@ -348,7 +639,7 @@ function markPending(kind,id){
 /* 寫入/更新一筆（cats/foods/records 共用），並排入同步 */
 function upsert(kind, obj){
   obj.updatedAt = Date.now();
-  const arr = DB[kind==='cat'?'cats':kind==='food'?'foods':'records'];
+  const arr = arrOfKind(kind); if(!arr) return;
   const i = arr.findIndex(x=>x.id===obj.id);
   if(i>=0) arr[i]=obj; else arr.push(obj);
   markPending(kind, obj.id);
@@ -356,12 +647,31 @@ function upsert(kind, obj){
   Sync.schedule();
 }
 function softDelete(kind, id){
-  const arr = DB[kind==='cat'?'cats':kind==='food'?'foods':'records'];
+  const arr = arrOfKind(kind); if(!arr) return;
   const o = arr.find(x=>x.id===id);
   if(o){ o.deleted=true; o.updatedAt=Date.now(); markPending(kind,id); saveDB(); Sync.schedule(); }
 }
+/* 「這一次開啟」新建、而且確定還沒送出去過的東西，可以直接整筆移除，不必留墓碑。
+   用在保健品那種「點錯馬上再點一下取消」的操作——否則每點錯一次就永遠多一列。
+   兩個條件缺一不可：
+   - 必須是本次載入才建的（NEW_THIS_LOAD），否則可能是別台裝置也有的舊資料；
+   - 必須還在 PENDING 裡（＝還沒成功送出），否則雲端已經有了，硬刪只會在下次拉回來。 */
+const NEW_THIS_LOAD = new Set();
+function hardDeleteIfUnsent(kind, id){
+  if(!NEW_THIS_LOAD.has(kind+'|'+id)) return false;
+  const pi = PENDING.findIndex(p=>p.kind===kind && p.id===id);
+  if(pi<0) return false;
+  const arr = arrOfKind(kind); if(!arr) return false;
+  const i = arr.findIndex(x=>x.id===id);
+  if(i<0) return false;
+  arr.splice(i,1); PENDING.splice(pi,1);
+  NEW_THIS_LOAD.delete(kind+'|'+id);
+  saveDB(); Sync.updatePill();
+  return true;
+}
 const liveCats  = () => DB.cats.filter(c=>!c.deleted);
 const liveFoods = () => DB.foods.filter(f=>!f.deleted);
+const liveSupps = () => DB.supps.filter(s=>!s.deleted);
 const liveRecs  = () => DB.records.filter(r=>!r.deleted);
 const catById = id => id===UNKNOWN_CAT ? {id:UNKNOWN_CAT,name:'不確定是誰',color:'#9aa4ad'} : DB.cats.find(c=>c.id===id);
 const catName = id => (catById(id)||{name:'（已移除）'}).name;
@@ -404,6 +714,40 @@ function daySummary(catId, dateKey){
   return s;
 }
 
+/* ---------- 保健品／用藥 ---------- */
+const suppById = id => DB.supps.find(s=>s.id===id);
+/* 這隻貓這個品項的所有記錄（新到舊） */
+function suppRecs(catId, suppId){
+  return liveRecs().filter(r=>r.type==='supp' && r.catId===catId &&
+      r.data && r.data.suppId===suppId)
+    .sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+}
+function lastSuppRec(catId, suppId){ return suppRecs(catId,suppId)[0] || null; }
+/* 今天已經記過的那些（可能一天不只一次） */
+function suppTodayRecs(catId, suppId){
+  return suppRecs(catId,suppId).filter(r=>dkey(new Date(r.ts))===todayKey());
+}
+/* 相隔幾個「日曆天」。用當地午夜對齊再相減，Math.round 吸收日光節約時間的 23/25 小時日。
+   ※ 不能用「經過幾小時 ÷ 24」——那樣畫面上會出現「上次 07/05・已 29 天」這種
+     自己跟自己打架的字（7/5 到 8/4 明明是 30 天），週期提醒也會晚將近一天才跳。 */
+function dayDiff(fromTs, toTs){
+  const a=new Date(fromTs), b=new Date(toTs);
+  a.setHours(0,0,0,0); b.setHours(0,0,0,0);
+  return Math.round((b-a)/(24*HOURS));
+}
+/* 距離上次幾天。從來沒記過回 null＝無從判斷，不催。 */
+function daysSinceSupp(catId, suppId){
+  const r = lastSuppRec(catId, suppId);
+  if(!r) return null;
+  return Math.max(0, dayDiff(r.ts, Date.now()));
+}
+/* 顯示用：把劑量與單位串起來（沒填劑量就只顯示單位或空字串） */
+function suppDoseText(s, dose){
+  const d = (dose==null||dose==='') ? s.dose : dose;
+  if(d==null || d==='') return '';
+  return round1(+d) + (s.unit||'');
+}
+
 /* ============================================================
    同步引擎（Google 試算表 / Apps Script）
    一次來回同時「推送本機變更＋拉回雲端變更」，updatedAt 新者勝。
@@ -426,7 +770,7 @@ const Sync = {
   collectChanges(){
     const out = [];
     for(const p of PENDING){
-      const arr = p.kind==='cat'?DB.cats : p.kind==='food'?DB.foods : DB.records;
+      const arr = arrOfKind(p.kind); if(!arr) continue;
       const o = arr.find(x=>x.id===p.id);
       if(o) out.push({ kind:p.kind, id:o.id, updatedAt:o.updatedAt||0,
         deleted:!!o.deleted, json:JSON.stringify(o) });
@@ -437,8 +781,8 @@ const Sync = {
     let changed = 0;
     for(const it of items){
       if(!it || !it.id) continue;
-      const key = it.kind==='cat'?'cats' : it.kind==='food'?'foods' : 'records';
-      const arr = DB[key];
+      const arr = arrOfKind(it.kind);
+      if(!arr){ this.park(it); continue; }     // 不認得的種類：不硬塞進 records，但也不能丟掉
       const i = arr.findIndex(x=>x.id===it.id);
       const local = i>=0 ? arr[i] : null;
       if(local && (local.updatedAt||0) >= (it.updatedAt||0)) continue; // 本機較新
@@ -448,6 +792,18 @@ const Sync = {
       changed++;
     }
     return changed;
+  },
+  /* 暫存「這一版還不認得的種類」。
+     為什麼要留：拉取是用 lastPullAt 當游標往前推的，跳過就等於永遠錯過——
+     這台裝置日後升上去之後，那些資料除非在雲端又被改過一次，否則再也拉不回來。
+     先原封不動放著，未來版本認得了就能直接吃。上限 500 筆，免得吃光 localStorage。 */
+  park(it){
+    if(!Array.isArray(DB._unknown)) DB._unknown=[];
+    const i = DB._unknown.findIndex(x=>x.id===it.id);
+    if(i>=0){ if((DB._unknown[i].updatedAt||0) >= (it.updatedAt||0)) return; DB._unknown.splice(i,1); }
+    DB._unknown.push({kind:it.kind, id:it.id, updatedAt:it.updatedAt||0,
+                      deleted:!!it.deleted, json:it.json});
+    if(DB._unknown.length>500) DB._unknown.splice(0, DB._unknown.length-500);
   },
   async run(manual){
     if(!this.enabled()){ if(manual) toast('尚未設定雲端同步'); return; }
@@ -469,7 +825,7 @@ const Sync = {
       if(!j || !j.ok) throw new Error(j && j.error || '伺服器回應異常');
       // 成功：清掉已送出的待同步（期間新增的保留）
       PENDING = PENDING.filter(p=>!sentIds.includes(p.kind+'|'+p.id) ||
-        (()=>{ const arr=p.kind==='cat'?DB.cats:p.kind==='food'?DB.foods:DB.records;
+        (()=>{ const arr=arrOfKind(p.kind); if(!arr) return false;
                const o=arr.find(x=>x.id===p.id);
                const sent=sending.find(s=>s.kind===p.kind&&s.id===p.id);
                return o && sent && (o.updatedAt||0) > sent.updatedAt; })());
@@ -501,14 +857,51 @@ window.addEventListener('online', ()=>Sync.schedule());
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && Sync.enabled()) Sync.run(); });
 
 /* ============================================================
+   深色模式：auto（跟系統）／light／dark。
+   存在 localStorage 的獨立鍵，不進同步——每台裝置各自決定。
+   ============================================================ */
+const THEME_KEY = 'catcare_theme';
+const THEME_MODES = [
+  {v:'auto',  icon:'auto', label:'跟隨系統'},
+  {v:'light', icon:'sun',  label:'淺色'},
+  {v:'dark',  icon:'moon', label:'深色'}
+];
+const Theme = {
+  mode:'auto',
+  systemDark(){ return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); },
+  isDark(){ return this.mode==='dark' || (this.mode==='auto' && this.systemDark()); },
+  apply(){
+    const dark=this.isDark();
+    document.documentElement.setAttribute('data-theme', dark?'dark':'light');
+    const meta=$('#themeColorMeta');
+    if(meta) meta.setAttribute('content', dark?'#151a20':'#2c6e7f');
+  },
+  init(){
+    try{ this.mode = localStorage.getItem(THEME_KEY) || 'auto'; }catch(e){}
+    this.apply();
+    if(window.matchMedia){
+      const mq=window.matchMedia('(prefers-color-scheme: dark)');
+      const h=()=>{ if(this.mode==='auto'){ this.apply(); UI.rerender(); } };
+      mq.addEventListener ? mq.addEventListener('change',h) : mq.addListener(h);
+    }
+  },
+  set(m){
+    this.mode=m;
+    try{ localStorage.setItem(THEME_KEY,m); }catch(e){}
+    this.apply();
+    UI.rerender();
+  }
+};
+
+/* ============================================================
    UI 骨架：分頁切換
    ============================================================ */
 const PAGES = [
-  {id:'today',    icon:'🏠', label:'今日'},
-  {id:'history',  icon:'📒', label:'記錄'},
-  {id:'stats',    icon:'📈', label:'統計'},
-  {id:'report',   icon:'📋', label:'報告'},
-  {id:'settings', icon:'⚙️', label:'設定'}
+  {id:'today',    icon:'home',   label:'今日'},
+  {id:'history',  icon:'list',   label:'記錄'},
+  {id:'stats',    icon:'chart',  label:'統計'},
+  {id:'report',   icon:'report', label:'報告'},
+  {id:'settings', icon:'gear',   label:'設定'}
 ];
 const UI = {
   page:'today',
@@ -524,9 +917,9 @@ const UI = {
   },
   renderNav(){
     $('#topTabs').innerHTML = PAGES.map(p=>
-      `<button class="tab ${p.id===this.page?'active':''}" onclick="UI.go('${p.id}')">${p.icon} ${p.label}</button>`).join('');
+      `<button class="tab ${p.id===this.page?'active':''}" onclick="UI.go('${p.id}')">${icon(p.icon,15)} ${p.label}</button>`).join('');
     $('#bottomNav').innerHTML = PAGES.map(p=>
-      `<button class="${p.id===this.page?'active':''}" onclick="UI.go('${p.id}')"><span class="bi">${p.icon}</span>${p.label}</button>`).join('');
+      `<button class="${p.id===this.page?'active':''}" onclick="UI.go('${p.id}')"><span class="ico bi" style="width:21px;height:21px"><svg viewBox="0 0 24 24" fill="currentColor">${ICONS[p.icon]}</svg></span>${p.label}</button>`).join('');
   },
   rerender(){
     if(liveCats().length===0 && this.page!=='settings'){ Today.renderEmpty(); return; }
@@ -552,6 +945,104 @@ const UI = {
 };
 
 /* ============================================================
+   健康提醒：只在「資料足以判斷」時才出現，不嚇人也不亂猜。
+   全部是觀察提醒，不是診斷——文案一律導向「請教獸醫」。
+   ============================================================ */
+const HOURS = 3600*1000;
+const Alerts = {
+  /* 距離上一次大便幾小時（沒有任何記錄回 null，代表無從判斷） */
+  hoursSincePoop(catId){
+    const list = liveRecs().filter(r=>r.type==='poop' && r.catId===catId)
+      .sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+    if(!list.length) return null;
+    return (Date.now() - new Date(list[0].ts).getTime()) / HOURS;
+  },
+  /* 體重變化：拿最近一筆，跟 15–45 天前最接近 30 天的一筆比 */
+  weightDrop(catId){
+    const ws = liveRecs().filter(r=>r.type==='weight' && r.catId===catId && r.data && r.data.kg>0)
+      .sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+    if(ws.length<2) return null;
+    const now = ws[0], nowT = new Date(now.ts).getTime();
+    const cands = ws.slice(1).filter(w=>{
+      const d = (nowT - new Date(w.ts).getTime()) / (24*HOURS);
+      return d>=15 && d<=45;
+    });
+    if(!cands.length) return null;
+    // 取最接近 30 天前的那筆
+    cands.sort((a,b)=>Math.abs((nowT-new Date(a.ts).getTime())/(24*HOURS)-30)
+                     -Math.abs((nowT-new Date(b.ts).getTime())/(24*HOURS)-30));
+    const prev = cands[0];
+    const pct = (prev.data.kg - now.data.kg) / prev.data.kg * 100;
+    if(pct <= 5) return null;
+    return { pct:round1(pct), from:prev.data.kg, to:now.data.kg,
+             days:Math.round((nowT-new Date(prev.ts).getTime())/(24*HOURS)) };
+  },
+  list(catId){
+    if(catId===UNKNOWN_CAT) return [];
+    const out=[];
+    const h = this.hoursSincePoop(catId);
+    if(h!=null && h>=48){
+      const days = Math.floor(h/24), rest = Math.floor(h%24);
+      const sev = h>=72 ? 'danger' : 'warn';
+      out.push({
+        sev, icon:'poop',
+        title: `已經 ${days} 天${rest?` ${rest} 小時`:''}沒記到大便`,
+        body: sev==='danger'
+          ? '超過三天沒排便，貓可能便祕或有其他問題，建議聯絡獸醫。若其實有上廁所只是忘了記，補記一筆就會消失。'
+          : '貓通常一天排便 1–2 次。若確實沒上廁所，留意食慾與精神；補記漏掉的紀錄也會讓這則提醒消失。'
+      });
+    }
+    const w = this.weightDrop(catId);
+    if(w){
+      out.push({
+        sev: w.pct>=10 ? 'danger' : 'warn', icon:'weight',
+        title: `體重 ${w.days} 天內下降 ${w.pct}%（${w.from} → ${w.to} kg）`,
+        body: '貓體重短期下降常是身體狀況的早期訊號。若不是刻意減重，建議帶去給獸醫看看；若是量錯了，改掉那筆記錄即可。'
+      });
+    }
+    out.push(...this.suppAlerts(catId));
+    return out;
+  },
+  /* 保健品／用藥提醒。
+     只有 remind 打開的品項才會出現——每日型預設是關的（沒點不等於漏給），
+     週期型預設是開的（一個月一次的東西，忘記的代價比被打擾高）。 */
+  suppAlerts(catId){
+    const out=[];
+    for(const s of liveSupps()){
+      if(!s.remind) continue;
+      if(s.kind==='cycle'){
+        if(!(s.everyDays>0)) continue;
+        const d = daysSinceSupp(catId, s.id);
+        if(d==null) continue;                     // 從沒記過＝不知道上次何時，不亂猜
+        if(d < s.everyDays) continue;
+        out.push({
+          sev: d >= s.everyDays*1.5 ? 'danger' : 'warn', icon:'supp',
+          title: `${s.name}：距離上次已 ${d} 天（每 ${s.everyDays} 天一次）`,
+          body: '到週期了。做完在今日頁按「記一次」就會重新計算；若其實已經做了只是忘了記，補一筆並把時間改成當天即可。'
+        });
+      }else{
+        if(suppTodayRecs(catId, s.id).length) continue;
+        out.push({
+          sev:'warn', icon:'supp',
+          title: `今天還沒記到「${s.name}」`,
+          body: '在今日頁點一下就記下來了。如果不想被提醒，到「設定 → 保健品／用藥」把這個品項的提醒關掉即可。'
+        });
+      }
+    }
+    return out;
+  },
+  html(catId){
+    const list = this.list(catId);
+    if(!list.length) return '';
+    return `<div class="alerts">${list.map(a=>`
+      <div class="alert-card ${a.sev}">
+        ${icon(a.icon,18)}
+        <div class="ac-body"><b>${esc(a.title)}</b>${esc(a.body)}</div>
+      </div>`).join('')}</div>`;
+  }
+};
+
+/* ============================================================
    今日頁
    ============================================================ */
 const Today = {
@@ -560,7 +1051,7 @@ const Today = {
     UI.page='today'; UI.renderNav();
     $('#page-today').innerHTML = `
       <div class="card" style="text-align:center;padding:36px 20px">
-        <div style="font-size:44px">🐱</div>
+        <div>${iconRound('cat',60,'var(--accent)')}</div>
         <h2 style="margin:10px 0 6px">歡迎使用貓咪照護日誌</h2>
         <p class="lede" style="margin:0 auto 18px">先建立第一隻貓的資料，就可以開始記錄大小便、飲食飲水與體重。</p>
         <button class="btn accent lg" onclick="Settings.editCat()">＋ 新增貓咪</button>
@@ -584,6 +1075,7 @@ const Today = {
 
     $('#page-today').innerHTML = `
       ${UI.catBar(cat.id,'Today.pickCat',{withUnknown:true})}
+      ${Alerts.html(cat.id)}
       <div class="card">
         <h2>${fmtDateFull(todayKey())} <span class="muted" style="font-weight:600;font-size:13px">${cats.length>1?esc(cat.name):''}</span></h2>
         <div class="quick-grid" style="margin-top:10px">
@@ -600,14 +1092,14 @@ const Today = {
         <h2>今日攝取${cats.length>1?`（${esc(cat.name)}）`:''}</h2>
         ${cat.id===UNKNOWN_CAT ? '<p class="empty">「不確定是誰」僅記次數，不計入個別貓的攝取統計。</p>' : `
         <div class="meter">
-          <div class="m-head"><span>💧 總攝水（喝水 ${s.drinkMl} ＋ 食物 ${s.foodWaterMl} ml）</span>
+          <div class="m-head"><span>${icon('pee',14,'var(--i-drink)')} 總攝水（喝水 ${s.drinkMl} ＋ 食物 ${s.foodWaterMl} ml）</span>
             <b>${s.totalWaterMl} <span class="muted" style="font-size:12px;font-weight:600">/ ${wT!=null?wT+' ml':'？'}</span></b></div>
           <div class="m-track"><div class="m-fill ${wPct>=100?'ok':wPct>=60?'':'warn'}" style="width:${wT?Math.max(2,wPct):2}%"></div></div>
           <div class="m-note">${wT==null ? '先記一次體重，才能算建議攝水量' :
             wPct>=100 ? '已達今日建議量 ✓' : `還差約 ${Math.max(0,wT-s.totalWaterMl)} ml（建議 ${cat.waterMlPerKg||50} ml/kg/日）`}</div>
         </div>
         <div class="meter">
-          <div class="m-head"><span>🔥 熱量</span>
+          <div class="m-head"><span>${icon('fire',14,'var(--i-event)')} 熱量</span>
             <b>${s.kcal} <span class="muted" style="font-size:12px;font-weight:600">/ ${kT!=null?kT+' kcal':'？'}</span></b></div>
           <div class="m-track"><div class="m-fill ${kPct>110?'warn':kPct>=90?'ok':''}" style="width:${kT?Math.max(2,Math.min(100,kPct)):2}%"></div></div>
           <div class="m-note">${kT==null ? '先記一次體重，才能估每日熱量需求' :
@@ -615,16 +1107,62 @@ const Today = {
         </div>`}
       </div>
 
+      ${this.suppCardHTML(cat)}
+
       <div class="card">
         <h2>今日記錄 <span class="muted" style="font-size:12.5px;font-weight:600">${cats.length>1?`（${esc(cat.name)}）`:''}</span></h2>
         ${recs.length ? `<ul class="rec-list">${recs.map(r=>Recs.itemHTML(r)).join('')}</ul>`
           : '<p class="empty">今天還沒有記錄，點上面的大按鈕開始記。</p>'}
       </div>`;
   },
+  /* 保健品／用藥卡：沒建立任何品項就整張不出現（不打擾沒在用的人）。
+     每日型＝一排膠囊，點一下記、再點取消，用品項的預設劑量，不開彈窗。
+     週期型＝一行「上次◯◯・已幾天」＋「記一次」；一個月才一次，
+     開彈窗的成本可以忽略，換到的是「可以把時間改成實際那天」。 */
+  suppCardHTML(cat){
+    if(!cat || cat.id===UNKNOWN_CAT) return '';
+    const supps = liveSupps();
+    if(!supps.length) return '';
+    const daily = supps.filter(s=>s.kind!=='cycle');
+    const cycle = supps.filter(s=>s.kind==='cycle');
+    const dailyHTML = daily.length ? `
+      <div class="supp-line">
+        <span class="sl-label">每天</span>
+        <div class="opt-group" style="flex:1">${daily.map(s=>{
+          const n = suppTodayRecs(cat.id,s.id).length;
+          const dose = suppDoseText(s);
+          return `<button class="opt sm ok ${n?'active':''}" onclick="Supp.tapDaily('${s.id}')"
+            title="${n?'再點一下取消今天最後一筆':'點一下就記下來'}">
+            ${n?icon('check',13):''}${esc(s.name)}${dose?`<span class="s-dose">${esc(dose)}</span>`:''}${n>1?`<span class="s-dose">×${n}</span>`:''}</button>`;
+        }).join('')}</div>
+      </div>` : '';
+    const cycleHTML = cycle.length ? `
+      <div class="item-list" style="margin-top:${daily.length?'11px':'2px'}">${cycle.map(s=>{
+        const last = lastSuppRec(cat.id,s.id);
+        const d = daysSinceSupp(cat.id,s.id);
+        const due = (s.everyDays>0 && d!=null && d>=s.everyDays);
+        const meta = d==null ? '還沒記過──做完按「記一次」就開始算'
+          : `上次 ${fmtDate(dkey(new Date(last.ts)))}・已 ${d} 天${s.everyDays>0?`／每 ${s.everyDays} 天`:''}`;
+        return `<div class="item">
+          <span class="ico-round" style="width:34px;height:34px;background:var(--i-supp)" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff">${ICONS.supp}</svg></span>
+          <div class="item-main">
+            <div class="item-name">${esc(s.name)}</div>
+            <span class="sc-meta ${due?'due':''}">${esc(meta)}</span>
+          </div>
+          <span class="item-act"><button class="btn sm ${(due||d==null)?'accent':'ghost'}" onclick="Supp.openRecord('${s.id}')">記一次</button></span>
+        </div>`;}).join('')}</div>` : '';
+    return `
+      <div class="card">
+        <h2>${icon('supp',18,'var(--i-supp)')} 保健品／用藥</h2>
+        ${dailyHTML}${cycleHTML}
+        ${daily.length?`<p class="hint" style="margin:10px 0 0">點一下就記下來（帶入該品項的常用劑量），再點一次取消。要改劑量或時間，到「記錄」頁點那一筆的編輯。</p>`:''}
+      </div>`;
+  },
   quickBtn(type, caption){
     const t = REC_TYPES[type];
     return `<button class="quick-btn" onclick="Sheet.open('${type}')">
-      <span class="qi">${t.icon}</span><span class="ql">${t.label}</span>
+      <span class="qi ico-round" style="background:${t.color}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff">${ICONS[t.icon]}</svg></span>
+      <span class="ql">${t.label}</span>
       <span class="qc">${caption}</span></button>`;
   },
   pickCat(id){ UI.selCat=id; this.render(); }
@@ -635,14 +1173,15 @@ const Recs = {
   describe(r){
     const d = r.data||{};
     if(r.type==='poop'){
+      const shape = d.score ? `${d.score} ${(POOP_SCORES.find(s=>s.v===d.score)||{}).l||''}` : '';
       if(d.status==='abnormal'){
         const bits=[];
-        if(d.score) bits.push('便況'+d.score+'（'+(POOP_SCORES.find(s=>s.v===d.score)||{}).l+'）');
+        if(shape) bits.push(shape);
         if(d.color && d.color!=='正常棕') bits.push(d.color);
         if(d.blood) bits.push('血絲'); if(d.mucus) bits.push('黏液');
         return {sub:bits.join('、')||'異常', abn:true};
       }
-      return {sub:'正常', abn:false};
+      return {sub: shape ? `正常・${shape}` : '正常', abn:false};
     }
     if(r.type==='pee'){
       const size={S:'小',M:'中',L:'大'}[d.size]||'';
@@ -654,21 +1193,27 @@ const Recs = {
     if(r.type==='drink') return {sub:`${d.ml} ml${d.method==='est'?'（估計）':''}`, abn:false};
     if(r.type==='weight') return {sub:`${d.kg} kg`, abn:false};
     if(r.type==='event') return {sub:esc(d.kind||'事件'), abn:true};
+    if(r.type==='supp'){
+      /* sub 會被原樣塞進 HTML，所以 unit 一定要 esc()——它可能不是我們寫的：
+         匯入別人的備份、或多人共用的試算表拉回來的資料都可能夾帶標籤。 */
+      const dose = (d.dose==null||d.dose==='') ? '' : ' '+round1(+d.dose)+esc(d.unit||'');
+      return {sub:esc(d.suppName||'')+dose, abn:false};
+    }
     return {sub:'',abn:false};
   },
   itemHTML(r, showDate){
-    const t = REC_TYPES[r.type]||{icon:'❓',label:r.type};
+    const t = REC_TYPES[r.type]||{icon:'paw',color:'var(--muted)',label:r.type};
     const {sub,abn} = this.describe(r);
     const many = liveCats().length>1;
     return `<li>
-      <span class="rec-ico">${t.icon}</span>
+      <span class="rec-ico ico" style="color:${t.color}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor">${ICONS[t.icon]}</svg></span>
       <div class="rec-main">
         <div class="rec-title">${t.label}${many?`<span class="rc-cat">${esc(catName(r.catId))}</span>`:''}</div>
         <div class="rec-sub">${abn?`<span class="abn">${sub}</span>`:sub}${r.data&&r.data.note?`<span class="muted">・${esc(r.data.note)}</span>`:''}</div>
       </div>
       <span class="rec-time">${showDate?fmtDate(dkey(new Date(r.ts)))+' ':''}${fmtTime(r.ts)}</span>
       <span class="rec-act no-print">
-        <button class="icon" onclick="Sheet.open('${r.type}','${r.id}')" title="編輯">✎</button>
+        <button class="icon" onclick="Sheet.open('${r.type}','${r.id}')" title="編輯">${icon('edit',12)}</button>
         <button class="icon danger" onclick="Recs.del('${r.id}')" title="刪除">✕</button>
       </span></li>`;
   },
@@ -686,10 +1231,13 @@ const Sheet = {
   cur:null,        // {type, editId, catId, form:{}}
   open(type, editId){
     const cats = liveCats();
-    if(!cats.length){ toast('請先在「設定」新增貓咪'); return; }
+    if(!cats.length){ toast('請先在「設定」新增貓咪'); this._presetSuppId=null; return; }
     let form={}, catId = (UI.selCat && UI.page==='today') ? UI.selCat : cats[0].id;
+    /* 保健品／用藥一定知道是餵給誰的，不像砂盆會認不出是誰上的 */
+    if(type==='supp' && catId===UNKNOWN_CAT) catId = cats[0].id;
     let ts = new Date().toISOString();
     if(editId){
+      this._presetSuppId = null;        // 編輯既有記錄時不吃預選，也不能留給下一次開啟
       const r = DB.records.find(x=>x.id===editId);
       if(!r) return;
       form = JSON.parse(JSON.stringify(r.data||{}));
@@ -701,6 +1249,11 @@ const Sheet = {
       if(type==='drink') form={ml:'', method:'measure'};
       if(type==='weight'){ const kg=latestWeight(catId); form={kg: kg||''}; }
       if(type==='event') form={kind:'嘔吐'};
+      if(type==='supp'){
+        const s = (this._presetSuppId && suppById(this._presetSuppId)) || liveSupps()[0];
+        form = { suppId: s?s.id:'', dose: s&&s.dose!=null?s.dose:'' };
+        this._presetSuppId = null;
+      }
     }
     this.cur = {type, editId:editId||null, catId, ts, form};
     this.render();
@@ -728,10 +1281,11 @@ const Sheet = {
     else if(c.type==='drink') body=this.drinkBody(c.form);
     else if(c.type==='weight') body=this.weightBody(c.form);
     else if(c.type==='event') body=this.eventBody(c.form);
+    else if(c.type==='supp') body=this.suppBody(c.form);
 
     $('#sheetBody').innerHTML = `
       <div class="sheet-head">
-        <h2>${t.icon} ${c.editId?'編輯':''}${t.label}</h2>
+        <h2>${icon(t.icon,20,t.color)} ${c.editId?'編輯':''}${t.label}</h2>
         <button class="sheet-close" onclick="Sheet.close()" aria-label="關閉">✕</button>
       </div>
       ${cats.length>1 ? `<div class="sec"><div class="sec-label">哪一隻貓？</div>
@@ -754,17 +1308,27 @@ const Sheet = {
   },
   /* --- 大便 --- */
   poopBody(f){
+    const sel = POOP_SCORES.find(s=>s.v===f.score);
     return `
       <div class="sec"><div class="sec-label">狀態</div>
         <div class="opt-group">
-          <button class="opt ok ${f.status==='normal'?'active':''}" onclick="Sheet.set('status','normal')">😺 正常</button>
-          <button class="opt danger ${f.status==='abnormal'?'active':''}" onclick="Sheet.set('status','abnormal')">😿 異常</button>
+          <button class="opt ok ${f.status==='normal'?'active':''}" onclick="Sheet.set('status','normal')">${icon('check',15)} 正常</button>
+          <button class="opt danger ${f.status==='abnormal'?'active':''}" onclick="Sheet.set('status','abnormal')">${icon('event',15)} 異常</button>
         </div></div>
+      <div class="sec"><div class="sec-label">形狀（可不選；1 最硬 → 7 最稀）</div>
+        <div class="score-row">${POOP_SCORES.map(s=>{
+          const on = f.score===s.v;
+          return `<button class="score-btn ${on?'active':''} ${POOP_IDEAL.includes(s.v)?'ideal':''}"
+            onclick="Sheet.set('score',${on?'null':s.v})" title="${esc(s.l)}：${esc(s.d)}" aria-label="便況 ${s.v} 分 ${esc(s.l)}">
+            <span class="ps-shape" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor">${s.s}</svg></span>
+            <b>${s.v}</b></button>`;}).join('')}
+        </div>
+        <div class="score-note">${sel
+          ? `<b>${sel.v}　${esc(sel.l)}</b>${esc(sel.d)}${POOP_IDEAL.includes(sel.v)?'<span class="ok-tag">理想範圍</span>':''}`
+            + (sel.tip?`<span class="score-tip">${esc(sel.tip)}</span>`:'')
+          : '點一下形狀就記下來，再點一次取消。2–3 分是理想範圍。'}</div>
+      </div>
       ${f.status==='abnormal'?`
-      <div class="sec"><div class="sec-label">便況（1 硬 → 7 水狀，理想約 2–3）</div>
-        <div class="score-row">${POOP_SCORES.map(s=>
-          `<button class="score-btn ${f.score===s.v?'active':''}" onclick="Sheet.set('score',${s.v})"><b>${s.v}</b><span>${s.l}</span></button>`).join('')}
-        </div></div>
       <div class="sec"><div class="sec-label">顏色</div>
         <div class="opt-group">${POOP_COLORS.map(cl=>
           `<button class="opt sm ${f.color===cl?'active':''}" onclick="Sheet.set('color','${cl}')">${cl}</button>`).join('')}
@@ -797,7 +1361,12 @@ const Sheet = {
     const left  = parseFloat(f.leftover)||0;
     const net   = Math.max(0, gross-left);
     const calc  = food ? feedCalc(food, net) : null;
+    const last  = this.lastFeed(this.cur.catId);
     return `
+      ${last&&!this.cur.editId?`<div class="sec">
+        <button class="btn sm ghost" style="width:100%" onclick="Sheet.repeatLastFeed()">
+          ${icon('repeat',14)} 同上一餐：${esc(last.data.foodName||'')} ${last.data.grams} g</button>
+      </div>`:''}
       <div class="sec"><div class="sec-label">吃什麼？（設定 → 食物庫可新增）</div>
         ${foods.length? `<select style="width:100%" onchange="Sheet.feedPickFood(this.value)">
           ${foods.map(x=>`<option value="${x.id}" ${x.id===f.foodId?'selected':''}>${esc(x.name)}（${esc(x.type)}・水 ${x.moisturePct}%・${x.kcalPer100g} kcal/100g）</option>`).join('')}
@@ -809,16 +1378,48 @@ const Sheet = {
         <div class="row">
           <input type="number" inputmode="decimal" min="0" step="1" value="${esc(f.grams)}" placeholder="g"
             style="width:110px" oninput="Sheet.setNoRender('grams',this.value);Sheet.feedPreview()">
-          <div class="opt-group">${[food&&food.defaultGrams||40, 15, 60, 85].filter((v,i,a)=>v&&a.indexOf(v)===i).map(g=>
-            `<button class="opt sm" onclick="Sheet.set('grams','${g}')">${g} g</button>`).join('')}
+          <div class="opt-group">${this.feedQuickGrams(food).map(g=>
+            `<button class="opt sm ${String(f.grams)===String(g)?'active':''}" onclick="Sheet.set('grams','${g}')">${g} g</button>`).join('')}
           </div></div></div>
       <div class="sec"><div class="sec-label">吃剩多少（g，可空；會從攝取扣掉）</div>
         <input type="number" inputmode="decimal" min="0" step="1" value="${esc(f.leftover)}" placeholder="0"
           style="width:110px" oninput="Sheet.setNoRender('leftover',this.value);Sheet.feedPreview()">
       </div>
       <div class="calc-preview" id="feedPreview">${calc?
-        `💧 水分 <span>${calc.waterMl} ml</span> 🔥 熱量 <span>${calc.kcal} kcal</span>（實吃 ${net} g）`:
+        `${icon('pee',14,'var(--i-drink)')} 水分 <span>${calc.waterMl} ml</span> ${icon('fire',14,'var(--i-event)')} 熱量 <span>${calc.kcal} kcal</span>（實吃 ${net} g）`:
         '選食物並輸入克數後自動計算'}</div>`:''}`;
+  },
+  /* 快捷克數：跟著「目前選到的食物」走，而不是把所有食物的常用量混在一起 */
+  feedQuickGrams(food){
+    const d = food ? parseFloat(food.defaultGrams) : NaN;
+    let list;
+    if(d>0){
+      list = [Math.round(d/2), Math.round(d), Math.round(d*1.5), Math.round(d*2)];
+    }else{
+      const t = food ? food.type : '';
+      list = (t==='主食罐') ? [40,70,85,100]
+           : (t==='副食罐/餐包') ? [35,50,70,85]
+           : (t==='零食') ? [2,5,10,15]
+           : (t==='鮮食/自製') ? [40,60,80,100]
+           : [10,20,30,50];
+    }
+    return list.filter(v=>v>0).filter((v,i,a)=>a.indexOf(v)===i).sort((a,b)=>a-b);
+  },
+  /* 這隻貓最近一筆餵食 */
+  lastFeed(catId){
+    return liveRecs().filter(r=>r.type==='feed' && r.catId===catId)
+      .sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0] || null;
+  },
+  repeatLastFeed(){
+    const r = this.lastFeed(this.cur.catId);
+    if(!r){ toast('還沒有上一餐可以帶入'); return; }
+    const food = liveFoods().find(f=>f.id===(r.data||{}).foodId);
+    if(!food){ toast('上一餐的食物已從食物庫移除，請重新選一個'); return; }
+    this.cur.form.foodId = food.id;
+    this.cur.form.grams  = r.data.grams;
+    this.cur.form.leftover = '';
+    this.render();
+    toast(`已帶入：${food.name} ${r.data.grams} g`);
   },
   feedPickFood(id){
     const f = liveFoods().find(x=>x.id===id);
@@ -832,7 +1433,7 @@ const Sheet = {
     const net=Math.max(0,(parseFloat(f.grams)||0)-(parseFloat(f.leftover)||0));
     const el=$('#feedPreview'); if(!el) return;
     if(food){ const c=feedCalc(food,net);
-      el.innerHTML=`💧 水分 <span>${c.waterMl} ml</span> 🔥 熱量 <span>${c.kcal} kcal</span>（實吃 ${net} g）`; }
+      el.innerHTML=`${icon('pee',14,'var(--i-drink)')} 水分 <span>${c.waterMl} ml</span> ${icon('fire',14,'var(--i-event)')} 熱量 <span>${c.kcal} kcal</span>（實吃 ${net} g）`; }
   },
   /* --- 喝水 --- */
   drinkBody(f){
@@ -874,6 +1475,56 @@ const Sheet = {
         <p class="hint" style="margin:8px 0 0">軟便、拉肚子請用「大便 → 異常」記，統計才算得準。</p>
       </div>`;
   },
+  /* --- 保健品／用藥 --- */
+  /* 選單裡「還存在的品項」＋（編輯舊記錄時）那筆記錄本來指到、但已經被刪掉的品項。
+     少了後者的話，select 會因為找不到對應的 option 而自動顯示第一個，
+     於是畫面寫著 A、單位是 B、按下去存成 C——三邊對不起來。 */
+  suppOptions(f){
+    const list = liveSupps().slice();
+    if(f.suppId && !list.some(x=>x.id===f.suppId)){
+      const gone = suppById(f.suppId);           // 可能只剩 tombstone，也可能整個不存在
+      list.unshift({ id:f.suppId, kind:'daily', dose:null,
+        name:((gone&&gone.name) || f.suppName || '（找不到的品項）') + '（已刪除）',
+        unit:(gone&&gone.unit) || f.unit || '' });
+    }
+    return list;
+  },
+  suppBody(f){
+    const supps = this.suppOptions(f);
+    if(!supps.length) return `<div class="sec">
+      <p class="empty" style="padding:4px 0">還沒有任何保健品或藥的品項。</p>
+      <button class="btn sm accent" onclick="Sheet.close();UI.go('settings');Settings.editSupp()">＋ 先新增一個品項</button></div>`;
+    const s = supps.find(x=>x.id===f.suppId) || supps[0];
+    if(f.suppId!==s.id) f.suppId = s.id;         // 讓 select 顯示的、與存檔用的永遠是同一個
+    const isCycle = s && s.kind==='cycle';
+    const d = s ? daysSinceSupp(this.cur.catId, s.id) : null;
+    return `
+      <div class="sec"><div class="sec-label">哪一個？（設定 → 保健品／用藥可新增）</div>
+        <select style="width:100%" onchange="Sheet.suppPick(this.value)">
+          ${supps.map(x=>`<option value="${x.id}" ${x.id===f.suppId?'selected':''}>${esc(x.name)}${x.dose!=null&&x.dose!==''?`（${esc(suppDoseText(x))}）`:''}</option>`).join('')}
+        </select>
+        ${isCycle?`<p class="hint" style="margin:6px 0 0">${d==null?'這是週期性的品項，還沒有記錄。'
+          :`上次是 ${fmtDate(dkey(new Date(lastSuppRec(this.cur.catId,s.id).ts)))}，距今 ${d} 天。`}
+          ${s.everyDays>0?`設定為每 ${esc(String(s.everyDays))} 天一次。`:''}<b>如果實際是前幾天做的，記得把下面的時間改成那一天。</b></p>`:''}
+      </div>
+      <div class="sec"><div class="sec-label">劑量（可空；預設帶入這個品項的常用量）</div>
+        <div class="row">
+          <input type="number" inputmode="decimal" min="0" step="0.1" value="${esc(f.dose)}" placeholder="例如 1"
+            style="width:110px" oninput="Sheet.setNoRender('dose',this.value)">
+          <span class="muted" style="font-weight:700;padding-bottom:9px">${esc((s&&s.unit)||'')}</span>
+        </div>
+        <p class="hint" style="margin:6px 0 0">平常都一樣的話這格不用碰。臨時減半、獸醫調藥時改這一筆就好，不會動到預設值。</p>
+      </div>`;
+  },
+  /* 換品項時劑量一律改成「新品項」的常用量——包含新品項沒設常用量時要清空。
+     不清空的話會把上一個品項的數字留著配新品項的單位（1 支 → 1 包），
+     而使用者根本沒輸入過那個 1。 */
+  suppPick(id){
+    const s=suppById(id);
+    this.cur.form.suppId=id;
+    this.cur.form.dose = (s && s.dose!=null && s.dose!=='') ? s.dose : '';
+    this.render();
+  },
   /* --- 存檔 --- */
   save(){
     const c=this.cur; if(!c) return;
@@ -881,10 +1532,17 @@ const Sheet = {
     if(c.catId===UNKNOWN_CAT && !(c.type==='poop'||c.type==='pee')){
       toast('「不確定是誰」只能用在大小便記錄'); return;
     }
+    /* 時間不能是未來：datetime-local 的年份只要多按一下就會變成明年，
+       而畫面上只顯示 MM/DD，看不出來。這種記錄會讓「距離上次幾天」永遠算成 0，
+       週期提醒就這樣被無聲關掉一整年。留 1 天緩衝給時區與時鐘誤差。 */
+    if(new Date(c.ts).getTime() > Date.now() + 24*HOURS){
+      toast('時間不能填未來的日期，請確認年份'); return;
+    }
     let data={ note:(f.note||'').trim() };
     if(c.type==='poop'){
       data.status=f.status||'normal';
-      if(data.status==='abnormal'){ data.score=f.score||null; data.color=f.color||null;
+      data.score=f.score||null;                       // 形狀正常時也可以記
+      if(data.status==='abnormal'){ data.color=f.color||null;
         data.blood=!!f.blood; data.mucus=!!f.mucus; }
     }else if(c.type==='pee'){
       data.size=f.size||'M'; data.colorAbn=!!f.colorAbn;
@@ -909,6 +1567,15 @@ const Sheet = {
       data.kg=kg;
     }else if(c.type==='event'){
       data.kind=f.kind||'其他';
+    }else if(c.type==='supp'){
+      if(!f.suppId){ toast('請先選一個品項'); return; }
+      const s=suppById(f.suppId);              // 品項可能已被刪除，這時沿用記錄裡的名稱快照
+      const dose = (f.dose==='' || f.dose==null) ? null : parseFloat(f.dose);
+      if(dose!=null && !(dose>=0)){ toast('劑量請填 0 以上的數字，或留空'); return; }
+      data.suppId=f.suppId;
+      data.suppName = s ? s.name : (f.suppName || '（已刪除的品項）');
+      data.dose = dose;
+      data.unit = s ? (s.unit||'') : (f.unit||'');
     }
     const rec = c.editId ? DB.records.find(x=>x.id===c.editId) : { id:uid() };
     rec.catId=c.catId; rec.ts=c.ts; rec.type=c.type; rec.data=data;
@@ -919,6 +1586,46 @@ const Sheet = {
   }
 };
 $('#sheetMask').addEventListener('click', e=>{ if(e.target.id==='sheetMask') Sheet.close(); });
+
+/* ============================================================
+   保健品／用藥的兩種互動
+   tapDaily   ：今日頁點一下＝記一筆（帶預設劑量、現在時間），再點＝取消今天最新那筆。
+                刻意不開彈窗、不跳確認——每天要按好幾次的東西，多一步就沒人會用。
+   openRecord ：週期型走完整彈窗，因為「補記成前幾天」比少按一下重要。
+   ============================================================ */
+const Supp = {
+  /* 目前該記給哪一隻貓：今日頁選的那隻；選到「？不確定」時退回第一隻
+     （保健品一定知道是餵給誰的，不像砂盆認不出是誰上的） */
+  targetCat(){
+    if(UI.selCat && UI.selCat!==UNKNOWN_CAT && liveCats().some(c=>c.id===UI.selCat)) return UI.selCat;
+    const c = liveCats()[0];
+    return c ? c.id : null;
+  },
+  tapDaily(suppId){
+    const s = suppById(suppId); if(!s) return;
+    const catId = this.targetCat();
+    if(!catId){ toast('請先在「設定」新增貓咪'); return; }
+    const today = suppTodayRecs(catId, suppId);
+    if(today.length){
+      const id = today[0].id;                  // suppRecs 已排序，[0] 是今天最新的那筆
+      if(!hardDeleteIfUnsent('record', id)) softDelete('record', id);
+      toast(`已取消：${s.name}`);
+    }else{
+      const dose = (s.dose==null||s.dose==='') ? null : +s.dose;
+      const id = uid();
+      NEW_THIS_LOAD.add('record|'+id);
+      upsert('record', { id, catId, ts:new Date().toISOString(), type:'supp',
+        data:{ suppId:s.id, suppName:s.name, dose, unit:s.unit||'', note:'' } });
+      const dt = suppDoseText(s);
+      toast(`已記下：${s.name}${dt?' '+dt:''} ✓`);
+    }
+    UI.rerender();
+  },
+  openRecord(suppId){
+    Sheet._presetSuppId = suppId || null;
+    Sheet.open('supp');
+  }
+};
 
 /* ============================================================
    記錄頁（歷史列表）
@@ -946,7 +1653,8 @@ const History = {
           <label class="field">類型
             <select onchange="History.filterType=this.value;History.render()">
               <option value="all">全部</option>
-              ${Object.entries(REC_TYPES).map(([k,t])=>`<option value="${k}" ${this.filterType===k?'selected':''}>${t.icon} ${t.label}</option>`).join('')}
+              ${/* option 裡不能放 SVG，所以只放文字——v1.4~v1.5 這裡誤把圖示「名稱」印出來變成「poop 大便」 */''}
+              ${Object.entries(REC_TYPES).map(([k,t])=>`<option value="${k}" ${this.filterType===k?'selected':''}>${t.label}</option>`).join('')}
             </select></label>
           ${cats.length>1?`<label class="field">貓咪
             <select onchange="History.filterCat=this.value;History.render()">
@@ -1079,7 +1787,7 @@ const Stats = {
         ${unknown&&unknown.some(s=>s.poop+s.pee>0)?'<p class="hint" style="margin:0">另有記在「？不確定」的大小便，未計入本貓平均。</p>':''}
       </div>
       <div class="card chart-card">
-        <p class="chart-title">🚽 大小便次數（次/日）</p>
+        <p class="chart-title">${icon('poop',15,'var(--i-poop)')} 大小便次數（次/日）</p>
         <p class="chart-sub">${esc(cat.name)}・近 ${this.days} 天</p>
         ${Chart.bars(labels,[
           {label:'大便',color:'#b5761a',values:sums.map(s=>s.poop)},
@@ -1089,19 +1797,19 @@ const Stats = {
           <span><i style="background:#2c6e7f"></i>小便</span></div>
       </div>
       <div class="card chart-card">
-        <p class="chart-title">💧 每日總攝水（ml）</p>
+        <p class="chart-title">${icon('pee',15,'var(--i-drink)')} 每日總攝水（ml）</p>
         <p class="chart-sub">喝水＋食物水分${wT?`・目標 ${wT} ml/日`:'・記體重後顯示目標線'}</p>
         ${Chart.line(labels, sums.map(s=>s.totalWaterMl>0?s.totalWaterMl:null), '#2c6e7f',
           {target:wT||0, zeroBase:true, unit:' ml'})}
       </div>
       <div class="card chart-card">
-        <p class="chart-title">🔥 每日熱量（kcal）</p>
+        <p class="chart-title">${icon('fire',15,'var(--i-event)')} 每日熱量（kcal）</p>
         <p class="chart-sub">依食物庫換算${kT?`・需求約 ${kT} kcal/日`:''}</p>
         ${Chart.line(labels, sums.map(s=>s.kcal>0?s.kcal:null), '#2e7d5b',
           {target:kT||0, zeroBase:true, unit:' kcal'})}
       </div>
       <div class="card chart-card">
-        <p class="chart-title">⚖️ 體重（kg）</p>
+        <p class="chart-title">${icon('weight',15,'var(--i-weight)')} 體重（kg）</p>
         <p class="chart-sub">近 90 天全部記錄點</p>
         ${wVals.length ? Chart.line(wLabels,wVals,'#7b5aa6',{}) : '<p class="empty">還沒有體重記錄。</p>'}
       </div>`;
@@ -1121,7 +1829,7 @@ const Report = {
     if(!this.from){ const d=new Date(); d.setDate(d.getDate()-13); this.from=dkey(d); }
     $('#page-report').innerHTML = `
       <div class="card no-print">
-        <h2>📋 獸醫報告</h2>
+        <h2>${icon('report',18,'var(--accent)')} 獸醫報告</h2>
         <p class="hint">選期間產生摘要，可直接列印／存 PDF 帶去診間，或複製文字傳 LINE。</p>
         ${UI.catBar(this.selCat,'Report.pickCat')}
         <div class="row">
@@ -1158,10 +1866,11 @@ const Report = {
     }).sort((a,b)=>new Date(a.ts)-new Date(b.ts));
     const wT=waterTarget(cat), kT=kcalTarget(cat);
     const kgNow=latestWeight(cat.id);
+    const suppAgg=this.suppSummary(cat.id);
 
     const html = `
       <div class="card report-body" id="reportCard">
-        <h2>🐾 ${esc(cat.name)}・照護摘要</h2>
+        <h2>${icon('paw',18,'var(--accent)')} ${esc(cat.name)}・照護摘要</h2>
         <p class="report-meta">期間：${this.from} ～ ${this.to}（${n} 天）・產出日：${todayKey()}
           ${kgNow?`・目前體重 ${kgNow} kg`:''}</p>
         <h3>每日平均</h3>
@@ -1189,13 +1898,50 @@ const Report = {
             return `<tr><td>${fmtDate(dkey(new Date(r.ts)))}</td><td>${r.data.kg}</td>
               <td>${diff==null?'—':(diff>0?'+':'')+diff}</td></tr>`;}).join('')}</table></div>`
           :'<p class="empty">期間內沒有體重記錄。</p>'}
+        ${(suppAgg.length||liveSupps().length)?`
+        <h3>保健品／用藥</h3>
+        ${suppAgg.length?`<div class="tbl-scroll"><table>
+          <tr><th>品項</th><th>次數</th><th>劑量</th><th>最後一次</th></tr>
+          ${suppAgg.map(a=>`<tr><td>${esc(a.name)}${a.spec?`<br><span class="muted" style="font-size:12px">${esc(a.spec)}</span>`:''}</td>
+            <td>${a.n}</td><td>${esc(a.doseText||'—')}</td>
+            <td>${fmtDate(dkey(new Date(a.last)))}</td></tr>`).join('')}
+        </table></div>
+        <p class="hint" style="margin:6px 0 0">次數＝期間內實際記到的筆數，漏記不會出現在這裡。</p>`
+        :'<p class="empty">期間內沒有記到保健品或用藥。</p>'}`:''}
         <p class="hint" style="margin-top:14px">＊攝水與熱量依食物庫的含水量/熱量設定換算，僅供參考；診斷請以獸醫檢查為準。</p>
       </div>
       <div class="row no-print" style="margin-bottom:16px">
-        <button class="btn accent" onclick="window.print()">🖨 列印 / 存 PDF</button>
-        <button class="btn ghost" onclick="Report.copyText()">📋 複製文字摘要</button>
+        <button class="btn accent" onclick="window.print()">${icon('print',15)} 列印 / 存 PDF</button>
+        <button class="btn ghost" onclick="Report.copyText()">${icon('copy',15)} 複製文字摘要</button>
       </div>`;
     $('#reportOut').innerHTML=html;
+  },
+  /* 期間內的保健品／用藥彙總。
+     顯示用的名稱取「記錄當下存下來的 suppName」，所以品項後來被刪掉也還原得出來。 */
+  suppSummary(catId){
+    const recs = liveRecs().filter(r=>{
+      if(r.type!=='supp' || r.catId!==catId) return false;
+      const k=dkey(new Date(r.ts));
+      return k>=this.from && k<=this.to;
+    }).sort((a,b)=>new Date(a.ts)-new Date(b.ts));
+    const map = new Map();
+    for(const r of recs){
+      const d=r.data||{};
+      const key = d.suppId || d.suppName || '?';
+      if(!map.has(key)) map.set(key,{name:d.suppName||'（未命名）', n:0, last:r.ts,
+        unit:d.unit||'', doses:[], spec:(suppById(d.suppId)||{}).spec||''});
+      const a=map.get(key);
+      a.n++; a.last=r.ts;
+      if(d.unit) a.unit=d.unit;
+      if(d.dose!=null && d.dose!=='') a.doses.push(round1(+d.dose));
+    }
+    const out=[...map.values()];
+    for(const a of out){
+      if(!a.doses.length){ a.doseText=''; continue; }
+      const mn=Math.min(...a.doses), mx=Math.max(...a.doses);
+      a.doseText = (mn===mx ? String(mn) : `${mn}–${mx}`) + (a.unit||'');
+    }
+    return out;
   },
   copyText(){
     const cat=catById(this.selCat);
@@ -1213,6 +1959,10 @@ const Report = {
       `平均攝水：${Math.round(avg(s=>s.totalWaterMl))} ml/日（喝水＋食物水分）`,
       `平均熱量：${Math.round(avg(s=>s.kcal))} kcal/日`,
       abnLines.length?`異常日：\n${abnLines.join('\n')}`:'期間內無異常記錄',
+      (()=>{ const sa=this.suppSummary(cat.id);
+             if(!sa.length) return liveSupps().length ? '保健品／用藥：期間內沒有記到' : null;
+             return '保健品／用藥：\n'+sa.map(a=>
+               `  ${a.name}${a.doseText?` ${a.doseText}`:''}　${a.n} 次（最後 ${fmtDate(dkey(new Date(a.last)))}）`).join('\n'); })(),
       `（由貓咪照護日誌產出，數值依食物庫設定換算、僅供參考）`
     ].filter(Boolean).join('\n');
     navigator.clipboard.writeText(txt).then(()=>toast('已複製，可貼到 LINE'))
@@ -1225,37 +1975,86 @@ const Report = {
    ============================================================ */
 const Settings = {
   render(){
-    const cats=liveCats(), foods=liveFoods(), s=DB.settings;
+    const cats=liveCats(), foods=liveFoods(), supps=liveSupps(), s=DB.settings;
     $('#page-settings').innerHTML = `
       <div class="card">
-        <h2>🐱 貓咪管理</h2>
-        ${cats.length?`<div class="tbl-scroll"><table>
-          <tr><th>名字</th><th>體重</th><th>建議攝水</th><th>熱量需求</th><th></th></tr>
+        <h2>${icon('cat',18,'var(--accent)')} 貓咪管理</h2>
+        ${cats.length?`<div class="item-list">
           ${cats.map(c=>{const kg=latestWeight(c.id);
-            return `<tr><td><span class="cat-chip small" style="cursor:default"><span class="dot" style="background:${c.color}"></span>${esc(c.name)}</span></td>
-            <td>${kg?kg+' kg':'—'}</td><td>${waterTarget(c)||'—'} ml</td><td>${kcalTarget(c)||'—'} kcal</td>
-            <td><button class="icon" onclick="Settings.editCat('${c.id}')">✎ 編輯</button></td></tr>`;}).join('')}
-        </table></div>`:'<p class="empty">還沒有貓咪。</p>'}
+            return `<div class="item">
+              <span class="ico-round" style="width:34px;height:34px;background:${c.color}"><svg viewBox="0 0 24 24" fill="#fff">${ICONS.cat}</svg></span>
+              <div class="item-main">
+                <div class="item-name">${esc(c.name)}</div>
+                <div class="item-meta">
+                  <span class="chip key">${kg?kg+' kg':'尚無體重'}</span>
+                  <span class="chip">水 ${waterTarget(c)||'—'} ml/日</span>
+                  <span class="chip">${kcalTarget(c)||'—'} kcal/日</span>
+                </div>
+              </div>
+              <span class="item-act"><button class="icon" onclick="Settings.editCat('${c.id}')" aria-label="編輯 ${esc(c.name)}">${icon('edit',12)} 編輯</button></span>
+            </div>`;}).join('')}
+        </div>`:'<p class="empty">還沒有貓咪。</p>'}
         <button class="btn sm accent" style="margin-top:10px" onclick="Settings.editCat()">＋ 新增貓咪</button>
       </div>
 
       <div class="card">
-        <h2>🍚 食物庫</h2>
+        <h2>${icon('feed',18,'var(--i-feed)')} 食物庫</h2>
         <p class="hint">含水量與熱量請照包裝標示填，攝水/熱量統計才準。</p>
-        ${foods.length?`<div class="tbl-scroll"><table>
-          <tr><th>名稱</th><th>類型</th><th>含水 %</th><th>kcal/100g</th><th>常用量</th><th></th></tr>
-          ${foods.map(f=>`<tr><td>${esc(f.name)}</td><td>${esc(f.type)}</td><td>${f.moisturePct}</td>
-            <td>${f.kcalPer100g}</td><td>${f.defaultGrams||'—'} g</td>
-            <td><button class="icon" onclick="Settings.editFood('${f.id}')">✎ 編輯</button></td></tr>`).join('')}
-        </table></div>`:'<p class="empty">還沒有食物。</p>'}
+        ${foods.length?`<div class="item-list">
+          ${foods.map(f=>`<div class="item">
+            <span class="ico-round" style="width:34px;height:34px;background:${FOOD_TYPE_META[f.type]||'var(--i-feed)'}"><svg viewBox="0 0 24 24" fill="#fff">${ICONS.feed}</svg></span>
+            <div class="item-main">
+              <div class="item-name">${esc(f.name)}</div>
+              <div class="item-meta">
+                <span class="chip">${esc(f.type)}</span>
+                <span class="chip key">水 ${f.moisturePct}%</span>
+                <span class="chip key">${f.kcalPer100g} kcal/100g</span>
+                ${f.defaultGrams?`<span class="chip">常用 ${f.defaultGrams} g</span>`:''}
+                ${f.estimated?`<span class="chip" style="color:var(--warn)">估計值</span>`:''}
+              </div>
+            </div>
+            <span class="item-act"><button class="icon" onclick="Settings.editFood('${f.id}')" aria-label="編輯 ${esc(f.name)}">${icon('edit',12)} 編輯</button></span>
+          </div>`).join('')}
+        </div>`:'<p class="empty">還沒有食物。點下面「＋ 新增食物」自己建，或用「一鍵加入」帶入常用的。</p>'}
         <div class="row" style="margin-top:10px">
           <button class="btn sm accent" onclick="Settings.editFood()">＋ 新增食物</button>
-          <button class="btn sm ghost" onclick="Settings.addPresetFoods()">⭐ 一鍵加入我家常用食物（已查證官方標示）</button>
+          <button class="btn sm ghost" onclick="Settings.openFoodLib()">${icon('search',14)} 從常見市售食物挑</button>
         </div>
+        <div class="divider"></div>
+        <div class="row">
+          <button class="btn sm ghost" onclick="Settings.exportFoods()">${icon('save',14)} 匯出食物庫</button>
+          <button class="btn sm ghost" onclick="document.getElementById('importFoodsFile').click()">${icon('copy',14)} 匯入食物庫</button>
+          <input type="file" id="importFoodsFile" accept=".json,application/json" hidden onchange="Settings.importFoods(this)">
+        </div>
+        <p class="hint" style="margin:8px 0 0">食物庫可以單獨匯出成一個檔案傳給別人（只有食物，不含你家貓的任何記錄）。朋友匯入之後就不用重打一次包裝上的數字。</p>
+      </div>
+
+      <div class="card">
+        <h2>${icon('supp',18,'var(--i-supp)')} 保健品／用藥</h2>
+        <p class="hint">建立品項之後，今日頁就會出現一排可以點的按鈕。每天吃的點一下就記；隔一段時間才做一次的（滴劑、驅蟲）會顯示「上次◯◯・已幾天」並在到期時提醒。</p>
+        ${supps.length?`<div class="item-list">
+          ${supps.map(s=>{
+            const isCycle = s.kind==='cycle';
+            const dose = suppDoseText(s);
+            return `<div class="item">
+              <span class="ico-round" style="width:34px;height:34px;background:var(--i-supp)" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff">${ICONS.supp}</svg></span>
+              <div class="item-main">
+                <div class="item-name">${esc(s.name)}</div>
+                <div class="item-meta">
+                  <span class="chip">${isCycle?`每 ${esc(String(s.everyDays||'?'))} 天`:'每天／經常'}</span>
+                  ${dose?`<span class="chip key">${esc(dose)}</span>`:''}
+                  ${s.remind?`<span class="chip" style="color:var(--warn)">會提醒</span>`:''}
+                  ${s.spec?`<span class="chip">${esc(s.spec)}</span>`:''}
+                </div>
+              </div>
+              <span class="item-act"><button class="icon" onclick="Settings.editSupp('${s.id}')" aria-label="編輯 ${esc(s.name)}">${icon('edit',12)} 編輯</button></span>
+            </div>`;}).join('')}
+        </div>`:'<p class="empty">還沒有品項。魚油、益生菌、潔牙粉、每日藥，或隔一段時間才做一次的滴劑、驅蟲，都可以建在這裡。</p>'}
+        <button class="btn sm accent" style="margin-top:10px" onclick="Settings.editSupp()">＋ 新增品項</button>
       </div>
 
       <div class="card" id="secSync">
-        <h2>☁️ 雲端同步（Google 試算表）</h2>
+        <h2>${icon('cloud',18,'var(--accent)')} 雲端同步（Google 試算表）</h2>
         <p class="hint">設定一次之後，多台裝置、多位照顧者開同一個網址就能共同記錄。詳細步驟見「使用說明」。</p>
         <div class="row">
           <label class="field" style="flex:1;min-width:220px">Apps Script 網址
@@ -1268,13 +2067,13 @@ const Settings = {
         <div class="row" style="margin-top:10px">
           <button class="btn sm accent" onclick="Settings.saveSync()">儲存設定</button>
           <button class="btn sm ghost" onclick="Sync.run(true)">立即同步</button>
-          ${Sync.enabled()?`<button class="btn sm ghost" onclick="Settings.copyCareLink()">🔗 產生照顧者連結</button>`:''}
+          ${Sync.enabled()?`<button class="btn sm ghost" onclick="Settings.copyCareLink()">${icon('link',14)} 產生照顧者連結</button>`:''}
         </div>
         <p class="hint" id="syncStatus" style="margin:10px 0 0"></p>
       </div>
 
       <div class="card">
-        <h2>💾 備份與還原</h2>
+        <h2>${icon('save',18,'var(--accent)')} 備份與還原</h2>
         <div class="row">
           <button class="btn sm ghost" onclick="Settings.exportJSON()">匯出備份（JSON）</button>
           <button class="btn sm ghost" onclick="document.getElementById('importFile').click()">匯入備份（合併）</button>
@@ -1284,11 +2083,28 @@ const Settings = {
       </div>
 
       <div class="card">
-        <h2>📖 說明與其他</h2>
+        <h2>${icon(Theme.isDark()?'moon':'sun',18,'var(--accent)')} 顯示</h2>
+        <div class="sec-label" style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px">這個工具叫什麼</div>
+        <div class="row">
+          <input type="text" id="appNameInput" value="${esc(appName())}" placeholder="${esc(DEFAULT_APP_NAME)}"
+            maxlength="20" style="flex:1;min-width:160px" onchange="setAppName(this.value)">
+          <button class="btn sm ghost" onclick="setAppName(document.getElementById('appNameInput').value)">改名</button>
+        </div>
+        <p class="hint" style="margin:6px 0 8px">取成你家貓的名字也可以，例如「小虎日誌」。留空會回到預設「${esc(DEFAULT_APP_NAME)}」。這個名字只存在這台裝置，不會同步給其他照顧者。</p>
+        <div class="divider"></div>
+        <div class="sec-label" style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px">深淺色</div>
+        <div class="opt-group">${THEME_MODES.map(m=>
+          `<button class="opt sm ${Theme.mode===m.v?'active':''}" onclick="Theme.set('${m.v}')">${icon(m.icon,14)} ${m.label}</button>`).join('')}</div>
+        <p class="hint" style="margin:8px 0 0">只影響這台裝置，不會同步給其他人。</p>
+      </div>
+
+      <div class="card">
+        <h2>${icon('book',18,'var(--accent)')} 說明與其他</h2>
         <div class="row">
           <a class="btn sm ghost" href="guide.html" style="text-decoration:none">使用說明・同步設定教學</a>
           <button class="btn sm danger" onclick="Settings.wipe()">清除本機全部資料</button>
         </div>
+        <p class="hint" style="margin:10px 0 0">${esc(appName())} ${APP_VERSION}（${APP_DATE}）・記錄與參考用，不構成獸醫醫療建議。</p>
       </div>`;
     this.renderSyncStatus();
   },
@@ -1329,7 +2145,7 @@ const Settings = {
   renderCatSheet(){
     const f=this._catForm;
     $('#sheetBody').innerHTML=`
-      <div class="sheet-head"><h2>🐱 ${this._catEditId?'編輯':'新增'}貓咪</h2>
+      <div class="sheet-head"><h2>${icon('cat',20,'var(--accent)')} ${this._catEditId?'編輯':'新增'}貓咪</h2>
         <button class="sheet-close" onclick="Sheet.close()">✕</button></div>
       <div class="sec"><div class="sec-label">名字</div>
         <input type="text" id="catName" value="${esc(f.name)}" placeholder="例如：小虎" style="width:100%"></div>
@@ -1343,7 +2159,9 @@ const Settings = {
         <input type="month" id="catBirth" value="${esc(f.birthYM||'')}"></div>
       <div class="sec"><div class="sec-label">熱量需求係數（DER＝RER×係數）</div>
         <select id="catDer" style="width:100%">${DER_FACTORS.map(d=>
-          `<option value="${d.v}" ${+f.derFactor===d.v?'selected':''}>${d.l}</option>`).join('')}</select></div>
+          `<option value="${d.v}" ${+f.derFactor===d.v?'selected':''}>${d.l}</option>`).join('')}</select>
+        <p class="hint" style="margin:6px 0 0">覺得目標熱量偏高、貓怎麼吃都達不到？室內、不太動的絕育貓選 <b>×1.0</b> 通常比較貼近實際。</p>
+        <p class="hint" style="margin:4px 0 0">${DER_SOURCE_NOTE}</p></div>
       <div class="sec"><div class="sec-label">建議攝水量（ml／kg 體重／日，常用 40–60）</div>
         <input type="number" id="catWater" inputmode="decimal" min="20" max="100" step="5" value="${esc(f.waterMlPerKg||50)}" style="width:110px"></div>
       <div class="row" style="justify-content:flex-end">
@@ -1372,29 +2190,64 @@ const Settings = {
   /* --- 食物編輯 --- */
   editFood(id){
     const x=id?DB.foods.find(o=>o.id===id):null;
-    const f=x?{...x}:{name:'',type:'乾糧',moisturePct:'',kcalPer100g:'',defaultGrams:''};
+    const f=x?{...x}:{name:'',type:'',moisturePct:'',kcalPer100g:'',defaultGrams:'',estimated:false};
     this._foodForm=f; this._foodEditId=id||null;
+    OCR.reset();
     this.renderFoodSheet();
     $('#sheetMask').classList.add('show'); document.body.style.overflow='hidden';
   },
+  /* 選類型：只在欄位還是空的時候帶入該類型的典型值（不覆蓋已填的數字） */
+  pickFoodType(t){
+    const f=this._foodForm;
+    // 先把畫面上目前輸入的值收回 form，避免重繪時被清掉
+    this.grabFoodInputs();
+    f.type=t;
+    const d=FOOD_TYPE_DEFAULTS[t];
+    if(d){
+      if(f.moisturePct===''||f.moisturePct==null) f.moisturePct=d.moisturePct;
+      if(f.kcalPer100g===''||f.kcalPer100g==null) f.kcalPer100g=d.kcalPer100g;
+      if(f.defaultGrams===''||f.defaultGrams==null) f.defaultGrams=d.defaultGrams;
+      f._filledFrom=t;
+    }
+    this.renderFoodSheet();
+  },
+  /* 把彈窗內目前的輸入值同步回 _foodForm（重繪前呼叫） */
+  grabFoodInputs(){
+    const f=this._foodForm; if(!f) return;
+    const g=id=>{const el=$('#'+id); return el?el.value:null;};
+    const n=g('fdName');   if(n!==null) f.name=n;
+    const m=g('fdMoist');  if(m!==null) f.moisturePct=m;
+    const k=g('fdKcal');   if(k!==null) f.kcalPer100g=k;
+    const d=g('fdDef');    if(d!==null) f.defaultGrams=d;
+  },
+  setFoodField(k,v){ this.grabFoodInputs(); this._foodForm[k]=v; this.renderFoodSheet(); },
   renderFoodSheet(){
     const f=this._foodForm;
     $('#sheetBody').innerHTML=`
-      <div class="sheet-head"><h2>🍚 ${this._foodEditId?'編輯':'新增'}食物</h2>
+      <div class="sheet-head"><h2>${icon('feed',20,'var(--i-feed)')} ${this._foodEditId?'編輯':'新增'}食物</h2>
         <button class="sheet-close" onclick="Sheet.close()">✕</button></div>
       <div class="sec"><div class="sec-label">名稱（含品牌口味好辨認）</div>
         <input type="text" id="fdName" value="${esc(f.name)}" placeholder="例如：ｘｘ 雞肉主食罐 80g" style="width:100%">
         <div class="row" style="margin-top:8px">
-          <button class="btn sm ghost" onclick="Settings.searchFood()">🔍 上網查這個食物的標示</button>
+          <button class="btn sm ghost" onclick="Settings.searchFood()">${icon('search',14)} 上網查這個食物的標示</button>
         </div>
         <p class="hint" style="margin:6px 0 0">會開新分頁搜尋「名稱＋水分＋熱量」，找官方或包裝標示回來填；只要建一次，之後餵食直接選。</p></div>
-      <div class="sec"><div class="sec-label">類型</div>
+      <div class="sec"><div class="sec-label">類型（選了會先帶入該類型的典型值，可以改）</div>
         <div class="opt-group">${FOOD_TYPES.map(t=>
-          `<button class="opt sm ${f.type===t?'active':''}" onclick="Settings._foodForm.type='${t}';Settings.renderFoodSheet()">${t}</button>`).join('')}</div></div>
+          `<button class="opt sm ${f.type===t?'active':''}" onclick="Settings.pickFoodType('${t}')">${t}</button>`).join('')}</div>
+        ${f._filledFrom&&f._filledFrom===f.type?`<p class="hint" style="margin:6px 0 0">已帶入「${esc(f.type)}」的常見值當起點——<b>請照你手上的包裝標示改成正確數字</b>，統計才會準。</p>`:''}
+      </div>
+      ${OCR.boxHTML()}
       <div class="row">
-        <label class="field">含水量 %<input type="number" id="fdMoist" inputmode="decimal" min="0" max="100" step="0.5" value="${esc(f.moisturePct)}" placeholder="乾糧約10、罐頭約80" style="width:130px"></label>
-        <label class="field">熱量 kcal/100g<input type="number" id="fdKcal" inputmode="decimal" min="0" step="1" value="${esc(f.kcalPer100g)}" placeholder="看包裝標示" style="width:130px"></label>
+        <label class="field">含水量 %<input type="number" id="fdMoist" inputmode="decimal" min="0" max="100" step="0.5" value="${esc(f.moisturePct)}" placeholder="如 10" style="width:130px"></label>
+        <label class="field">熱量 kcal/100g<input type="number" id="fdKcal" inputmode="decimal" min="0" step="1" value="${esc(f.kcalPer100g)}" placeholder="如 398" style="width:130px"></label>
         <label class="field">常用一餐量 g<input type="number" id="fdDef" inputmode="decimal" min="0" step="1" value="${esc(f.defaultGrams)}" placeholder="可空" style="width:110px"></label>
+      </div>
+      <div class="sec" style="margin-top:10px">
+        <div class="opt-group">
+          <button class="opt sm warn ${f.estimated?'active':''}" onclick="Settings.setFoodField('estimated',${!f.estimated})">這筆熱量是估計值</button>
+        </div>
+        <p class="hint" style="margin:6px 0 0">包裝沒標成分分析、只能推算時勾起來；食物庫會標示，之後看統計才知道這筆沒那麼準。</p>
       </div>
       <p class="hint" style="margin-top:8px">包裝多半標「水分 ≤ x%」與「代謝能 ME kcal/kg」：kcal/kg ÷ 10 ＝ kcal/100g。</p>
       <div class="row" style="justify-content:flex-end;margin-top:10px">
@@ -1414,9 +2267,10 @@ const Settings = {
     if(!(moist>=0&&moist<=100)){ toast('含水量請填 0–100'); return; }
     if(!(kcal>=0)){ toast('請填熱量（kcal/100g）'); return; }
     const obj=this._foodEditId?DB.foods.find(x=>x.id===this._foodEditId):{id:uid()};
-    obj.name=name; obj.type=this._foodForm.type;
+    obj.name=name; obj.type=this._foodForm.type||'乾糧';
     obj.moisturePct=moist; obj.kcalPer100g=kcal;
     obj.defaultGrams=parseFloat($('#fdDef').value)||null;
+    obj.estimated=!!this._foodForm.estimated;
     upsert('food',obj);
     Sheet.close(); toast('已儲存 ✓'); this.render();
   },
@@ -1425,27 +2279,168 @@ const Settings = {
     softDelete('food',this._foodEditId);
     Sheet.close(); toast('已刪除'); this.render();
   },
-  addPresetFoods(){
-    /* 依 2026-07 官方／代理商公開標示查證；口味改版時請對照包裝微調 */
-    const presets=[
-      {name:"CORE 無穀成貓（火雞）乾糧",type:"乾糧",moisturePct:10,kcalPer100g:398,defaultGrams:20},
-      {name:"ZIWI 巔峰 風乾羊肉",type:"乾糧",moisturePct:14,kcalPer100g:495,defaultGrams:20},
-      {name:"ZIWI 巔峰 風乾牛肉",type:"乾糧",moisturePct:14,kcalPer100g:490,defaultGrams:20},
-      {name:"ZIWI 巔峰 風乾鹿肉",type:"乾糧",moisturePct:14,kcalPer100g:465,defaultGrams:20},
-      {name:"乾糧混合（CORE⅓＋巔峰⅔）",type:"乾糧",moisturePct:12.7,kcalPer100g:455,defaultGrams:30},
-      {name:"MAC's 火雞肉＋火雞心 主食罐",type:"主食罐",moisturePct:80,kcalPer100g:89,defaultGrams:100},
-      {name:"MAC's 雞肉＋雞心 主食罐",type:"主食罐",moisturePct:80,kcalPer100g:111,defaultGrams:100},
-      {name:"MAC's 鴨肉＋火雞肉＋雞肉 主食罐",type:"主食罐",moisturePct:79,kcalPer100g:101,defaultGrams:100},
-      {name:"SEEDS MamaMia 湯罐 85g",type:"副食罐/餐包",moisturePct:85,kcalPer100g:49,defaultGrams:85},
-      {name:"Greenies 潔牙餅（約1.4 kcal/顆）",type:"零食",moisturePct:10,kcalPer100g:358,defaultGrams:2},
-      {name:"好味小姐 貓丸凍乾（濃縮全雞）",type:"零食",moisturePct:5,kcalPer100g:499,defaultGrams:5},
-      {name:"爭鮮 鮪魚凍乾（熱量為估計值）",type:"零食",moisturePct:5,kcalPer100g:370,defaultGrams:3}
-    ];
-    for(const p of presets){
-      if(!liveFoods().some(f=>f.name===p.name)) upsert('food',{id:uid(),...p});
-    }
-    toast('已加入 12 筆常用食物（2026-07 查證官方標示）');
-    this.render();
+  /* --- 保健品／用藥品項 --- */
+  editSupp(id){
+    const x = id?DB.supps.find(o=>o.id===id):null;
+    const f = x?{...x}:{name:'',kind:'daily',dose:'',unit:'顆',everyDays:'',remind:false,spec:''};
+    if(!f.unit) f.unit='顆';
+    this._suppForm=f; this._suppEditId=id||null;
+    this.renderSuppSheet();
+    $('#sheetMask').classList.add('show'); document.body.style.overflow='hidden';
+  },
+  /* 重繪前把畫面上輸入到一半的值收回來（同食物編輯的作法） */
+  grabSuppInputs(){
+    const f=this._suppForm; if(!f) return;
+    const g=id=>{const el=$('#'+id); return el?el.value:null;};
+    const n=g('spName');  if(n!==null) f.name=n;
+    const d=g('spDose');  if(d!==null) f.dose=d;
+    const u=g('spUnit');  if(u!==null) f.unit=u;
+    const e=g('spEvery'); if(e!==null) f.everyDays=e;
+    const s=g('spSpec');  if(s!==null) f.spec=s;
+  },
+  setSuppField(k,v){ this.grabSuppInputs(); this._suppForm[k]=v; this.renderSuppSheet(); },
+  /* 換種類時把「要不要提醒」帶回該種類的預設：
+     每天吃的預設不催（沒點只代表沒記），週期性的預設要催（一個月一次最容易忘）。 */
+  pickSuppKind(k){
+    this.grabSuppInputs();
+    const f=this._suppForm;
+    if(f.kind===k){ this.renderSuppSheet(); return; }   // 點同一個不要把使用者調過的提醒設定洗掉
+    f.kind=k;
+    f.remind = (k==='cycle');
+    if(k==='cycle' && !(parseFloat(f.everyDays)>0)) f.everyDays=SUPP_DEFAULT_EVERY;
+    this.renderSuppSheet();
+  },
+  renderSuppSheet(){
+    const f=this._suppForm;
+    const isCycle = f.kind==='cycle';
+    $('#sheetBody').innerHTML=`
+      <div class="sheet-head"><h2>${icon('supp',20,'var(--i-supp)')} ${this._suppEditId?'編輯':'新增'}保健品／用藥</h2>
+        <button class="sheet-close" onclick="Sheet.close()" aria-label="關閉">✕</button></div>
+      <div class="sec"><div class="sec-label">名稱</div>
+        ${/* 例子刻意不寫任何商品名：滴劑／驅蟲藥品牌很多，寫死一個對別人沒意義 */''}
+        <input type="text" id="spName" value="${esc(f.name)}" placeholder="例如：魚油、益生菌、潔牙粉、體外驅蟲滴劑" style="width:100%"></div>
+      <div class="sec"><div class="sec-label">多久給一次？</div>
+        <div class="opt-group">${SUPP_KINDS.map(k=>
+          `<button class="opt sm ${f.kind===k.v?'active':''}" onclick="Settings.pickSuppKind('${k.v}')">${esc(k.l)}</button>`).join('')}</div>
+        <p class="hint" style="margin:6px 0 0">${esc((SUPP_KINDS.find(k=>k.v===f.kind)||SUPP_KINDS[0]).d)}</p>
+      </div>
+      ${isCycle?`<div class="sec"><div class="sec-label">幾天一次</div>
+        <div class="row">
+          <input type="number" id="spEvery" inputmode="numeric" min="1" max="400" step="1"
+            value="${esc(f.everyDays||SUPP_DEFAULT_EVERY)}" style="width:110px">
+          <span class="muted" style="font-weight:700;padding-bottom:9px">天</span>
+        </div>
+        <p class="hint" style="margin:6px 0 0">常見的體外驅蟲滴劑標示為 30 天一次，但<b>實際多久做一次請依獸醫建議</b>——不同藥品的標示間隔不一樣，也要看你家貓的生活型態與所在地區。這裡填你實際的頻率就好。到期時今日頁會出現提醒；不想被提醒的話，下面可以關掉。</p></div>`:''}
+      <div class="sec"><div class="sec-label">常用劑量（可空）</div>
+        <div class="row">
+          <input type="number" id="spDose" inputmode="decimal" min="0" step="0.5" value="${esc(f.dose)}"
+            placeholder="例如 1" style="width:110px">
+          <select id="spUnit" style="width:100px">${SUPP_UNITS.map(u=>
+            `<option value="${u}" ${f.unit===u?'selected':''}>${u}</option>`).join('')}</select>
+        </div>
+        <p class="hint" style="margin:6px 0 0">填一次就好，之後每次記錄都自動帶入這個量——<b>都吃一樣的話，記錄時完全不用碰數字</b>。臨時要改就在那一筆改，不會動到這裡。</p>
+      </div>
+      <div class="sec"><div class="sec-label">規格／內容物（可空，自己看得懂就好）</div>
+        <input type="text" id="spSpec" value="${esc(f.spec||'')}" placeholder="例如：某某牌 500mg/顆" style="width:100%">
+        <div class="row" style="margin-top:8px">
+          <button class="btn sm ghost" onclick="Settings.searchSupp()">${icon('search',14)} 上網查這個保健品</button>
+        </div>
+        <p class="hint" style="margin:6px 0 0">會開新分頁搜尋「品名＋貓＋成分＋建議用量」，查到再自己填回來。
+          <b>不知道一顆是多少也沒關係</b>——獸醫問的通常就是「一天幾顆」，「顆／匙」本身就是有效的記錄單位，這格空著不影響任何功能。</p>
+      </div>
+      <div class="sec"><div class="sec-label">要不要提醒我？</div>
+        <div class="opt-group">
+          <button class="opt sm ${f.remind?'active':''}" onclick="Settings.setSuppField('remind',${!f.remind})">
+            ${f.remind?icon('check',13):''}${isCycle?'到期時提醒':'今天還沒記就提醒'}</button>
+        </div>
+        <p class="hint" style="margin:6px 0 0">${isCycle
+          ? '建議開著。到了設定的天數還沒記到，今日頁就會出現一則提醒。'
+          : '<b>預設是關的</b>。每天的東西沒點只代表「沒記」，不代表漏給——除非是不能漏的藥，否則不建議開，免得天天被念。'}</p>
+      </div>
+      <div class="row" style="justify-content:flex-end;margin-top:10px">
+        ${this._suppEditId?`<button class="btn danger" onclick="Settings.delSupp()">刪除</button>`:''}
+        <button class="btn ghost" onclick="Sheet.close()">取消</button>
+        <button class="btn accent lg" onclick="Settings.saveSupp()">✓ 儲存</button></div>`;
+  },
+  searchSupp(){
+    this.grabSuppInputs();
+    const n=(this._suppForm.name||'').trim();
+    if(!n){ toast('先輸入名稱再查'); return; }
+    window.open('https://www.google.com/search?q='+encodeURIComponent(n+' 貓 保健品 成分 每顆 建議用量'),'_blank');
+  },
+  saveSupp(){
+    this.grabSuppInputs();
+    const f=this._suppForm;
+    const name=(f.name||'').trim();
+    if(!name){ toast('請輸入名稱'); return; }
+    const dose = (f.dose===''||f.dose==null) ? null : parseFloat(f.dose);
+    if(dose!=null && !(dose>=0)){ toast('常用劑量請填 0 以上的數字，或留空'); return; }
+    let every = parseFloat(f.everyDays);
+    if(f.kind==='cycle' && !(every>0)) every = SUPP_DEFAULT_EVERY;
+    const obj=this._suppEditId?DB.supps.find(x=>x.id===this._suppEditId):{id:uid()};
+    obj.name=name;
+    obj.kind = f.kind==='cycle' ? 'cycle' : 'daily';
+    obj.dose = dose;
+    obj.unit = SUPP_UNITS.includes(f.unit) ? f.unit : '顆';
+    obj.everyDays = obj.kind==='cycle' ? Math.round(every) : null;
+    obj.remind = !!f.remind;
+    obj.spec = (f.spec||'').trim();
+    upsert('supp',obj);
+    Sheet.close(); toast('已儲存 ✓'); UI.rerender();
+  },
+  delSupp(){
+    if(!confirm('刪除這個品項？（已經記下的用藥記錄不受影響，仍會留在記錄與報告裡）')) return;
+    softDelete('supp',this._suppEditId);
+    Sheet.close(); toast('已刪除'); UI.rerender();
+  },
+  /* --- 從常見市售食物清單挑 --- */
+  openFoodLib(){ FoodLib.open(); },
+  /* --- 食物庫匯出／匯入（分享給別人用） --- */
+  exportFoods(){
+    const foods = liveFoods().map(f=>({
+      name:f.name, type:f.type, moisturePct:f.moisturePct,
+      kcalPer100g:f.kcalPer100g, defaultGrams:f.defaultGrams||null,
+      estimated:!!f.estimated, libId:f.libId||null
+    }));
+    if(!foods.length){ toast('食物庫是空的，沒有東西可以匯出'); return; }
+    const payload = { kind:'catcare-foods', version:1,
+      exportedAt:new Date().toISOString(), count:foods.length, foods };
+    const blob=new Blob([JSON.stringify(payload,null,1)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='catcare-foods-'+todayKey().replaceAll('-','')+'.json';
+    a.click(); URL.revokeObjectURL(a.href);
+    toast(`已匯出 ${foods.length} 種食物，可以傳給別人`);
+  },
+  importFoods(input){
+    const file=input.files[0]; input.value='';
+    if(!file) return;
+    const rd=new FileReader();
+    rd.onload=()=>{
+      try{
+        const d=JSON.parse(rd.result);
+        const list = Array.isArray(d) ? d : (d && d.foods);
+        if(!Array.isArray(list)) throw new Error('這不是食物庫檔案');
+        let added=0, skipped=0;
+        for(const o of list){
+          const name=(o.name||'').trim();
+          const m=parseFloat(o.moisturePct), k=parseFloat(o.kcalPer100g);
+          if(!name || !(m>=0&&m<=100) || !(k>=0)){ skipped++; continue; }
+          if(liveFoods().some(f=>f.name===name)){ skipped++; continue; }
+          // 重新產 id：別人的 id 進到我們的資料裡，同步時可能互相覆蓋
+          upsert('food',{ id:uid(), name,
+            type: FOOD_TYPES.includes(o.type)?o.type:'乾糧',
+            moisturePct:m, kcalPer100g:k,
+            defaultGrams: parseFloat(o.defaultGrams)||null,
+            estimated: !!o.estimated, libId: o.libId||null });
+          added++;
+        }
+        toast(added ? `已匯入 ${added} 種${skipped?`（略過 ${skipped} 種：重複或資料不全）`:''}`
+                    : '沒有新的可以加入（都已經在食物庫裡，或資料不完整）');
+        this.render();
+      }catch(e){ toast('匯入失敗：'+e.message); }
+    };
+    rd.readAsText(file);
   },
   /* --- 備份 --- */
   exportJSON(){
@@ -1465,9 +2460,9 @@ const Settings = {
         const d=JSON.parse(rd.result);
         if(!d||!Array.isArray(d.records)) throw new Error('格式不符');
         let n=0;
-        for(const kind of ['cat','food','record']){
-          const src=kind==='cat'?d.cats:kind==='food'?d.foods:d.records;
-          const dst=kind==='cat'?DB.cats:kind==='food'?DB.foods:DB.records;
+        for(const kind of ['cat','food','supp','record']){
+          const src=d[KIND_ARR[kind]];
+          const dst=arrOfKind(kind);
           for(const o of (src||[])){
             const i=dst.findIndex(x=>x.id===o.id);
             if(i<0){ dst.push(o); markPending(kind,o.id); n++; }
@@ -1489,6 +2484,202 @@ const Settings = {
 };
 
 /* ============================================================
+   常見市售食物挑選器
+   刻意的設計：不做「一鍵全部加入」——每個人家裡吃的東西不一樣，
+   全部塞進去只會讓食物庫變垃圾場。改成挑了才加，一次一筆。
+   ============================================================ */
+const FoodLib = {
+  q:'', cat:'全部',
+  cats(){ return ['全部', ...FOOD_TYPES.filter(t=>FOOD_LIBRARY.some(x=>x.type===t))]; },
+  matches(){
+    const q=this.q.trim().toLowerCase();
+    return FOOD_LIBRARY.filter(x=>{
+      if(this.cat!=='全部' && x.type!==this.cat) return false;
+      if(!q) return true;
+      return (x.name+' '+x.brand+' '+x.type).toLowerCase().includes(q);
+    });
+  },
+  added(x){ return liveFoods().some(f=>f.libId===x.id || f.name===x.name); },
+  open(){
+    this.q=''; this.cat='全部';
+    this.render();
+    $('#sheetMask').classList.add('show'); document.body.style.overflow='hidden';
+  },
+  setQ(v){ this.q=v; this.renderList(); },
+  setCat(c){ this.cat=c; this.render(); const el=$('#flQ'); if(el) el.focus(); },
+  render(){
+    $('#sheetBody').innerHTML=`
+      <div class="sheet-head"><h2>${icon('search',20,'var(--accent)')} 常見市售食物</h2>
+        <button class="sheet-close" onclick="Sheet.close()" aria-label="關閉">✕</button></div>
+      <p class="hint" style="margin:0 0 10px">挑你家在吃的加進食物庫就好，不用全加。數值是 ${FOOD_LIB_VERIFIED} 查證各家官方或代理商標示，<b>加進來之後請跟你手上的包裝核對一次</b>——廠商會改配方，同系列不同口味也不一樣。</p>
+      <input type="text" id="flQ" placeholder="搜尋品牌或品名…" value="${esc(this.q)}"
+        style="width:100%;margin-bottom:9px" oninput="FoodLib.setQ(this.value)">
+      <div class="opt-group" style="margin-bottom:10px">${this.cats().map(c=>
+        `<button class="opt sm ${this.cat===c?'active':''}" onclick="FoodLib.setCat('${c}')">${c}</button>`).join('')}</div>
+      <div id="flList"></div>
+      <div class="row" style="justify-content:flex-end;margin-top:12px">
+        <button class="btn ghost" onclick="Sheet.close()">關閉</button>
+      </div>`;
+    this.renderList();
+  },
+  renderList(){
+    const el=$('#flList'); if(!el) return;
+    const list=this.matches();
+    if(!list.length){ el.innerHTML='<p class="empty">找不到符合的。找不到你家的食物是正常的——用「＋ 新增食物」自己建，或拍包裝標示讓工具讀。</p>'; return; }
+    el.innerHTML=`<div class="fl-list">${list.map(x=>{
+      const on=this.added(x);
+      return `<div class="fl-item">
+        <div class="fl-main">
+          <div class="fl-name">${esc(x.name)}</div>
+          <div class="item-meta">
+            <span class="chip">${esc(x.type)}</span>
+            <span class="chip key">水 ${x.moisturePct}%</span>
+            <span class="chip key">${x.kcalPer100g} kcal/100g</span>
+            ${x.defaultGrams?`<span class="chip">常用 ${x.defaultGrams} g</span>`:''}
+            <span class="chip ${x.conf==='high'?'src-hi':'src-md'}">${x.conf==='high'?'官網':'通路頁'}</span>
+          </div>
+          ${x.caution?`<div class="fl-caution">${esc(x.caution)}</div>`:''}
+          <div class="fl-src">${esc(x.note)}・<a href="${esc(x.src)}" target="_blank" rel="noopener">看出處</a></div>
+        </div>
+        <div class="fl-act">${on
+          ? `<span class="chip" style="color:var(--ok);border-color:var(--ok)">已加入</span>`
+          : `<button class="btn sm accent" onclick="FoodLib.add('${x.id}')">＋ 加入</button>`}</div>
+      </div>`;}).join('')}</div>`;
+  },
+  add(id){
+    const x=FOOD_LIBRARY.find(o=>o.id===id); if(!x) return;
+    if(this.added(x)){ toast('食物庫裡已經有了'); return; }
+    upsert('food',{ id:uid(), libId:x.id, name:x.name, type:x.type,
+      moisturePct:x.moisturePct, kcalPer100g:x.kcalPer100g,
+      defaultGrams:x.defaultGrams||null, estimated:false });
+    toast(`已加入：${x.name}`);
+    this.renderList();
+    if(UI.page==='settings') Settings.render();
+  }
+};
+
+/* ============================================================
+   OCR：拍包裝背面的「成分分析／保證分析」，在這台裝置的瀏覽器裡
+   認字，挑出「水分 %」與「熱量」候選，由使用者按一下才填入。
+   ------------------------------------------------------------
+   誠實說明（也寫在畫面上）：
+   - 照片不會上傳到任何伺服器，辨識全在瀏覽器內完成。
+   - 但辨識引擎（tesseract.js）與語言模型需要第一次連網下載，
+     之後由瀏覽器快取；純離線且沒載過 → 這個功能不會動，
+     其餘功能不受影響。
+   - 認錯字很常見，所以一律「給候選 → 你確認 → 才寫入」，
+     絕不自動蓋掉你填的數字。
+   ============================================================ */
+const OCR_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+const OCR = {
+  state:'idle',        // idle | loading | running | done | error
+  msg:'', raw:'', hits:null, _lib:null,
+  reset(){ this.state='idle'; this.msg=''; this.raw=''; this.hits=null; },
+  boxHTML(){
+    const f=Settings._foodForm||{};
+    const h=this.hits;
+    return `<div class="ocr-box">
+      <div class="row" style="align-items:center">
+        <button class="btn sm ghost" onclick="document.getElementById('ocrFile').click()">${icon('camera',14)} 拍包裝標示自動讀數字</button>
+        <input type="file" id="ocrFile" accept="image/*" capture="environment" hidden onchange="OCR.handleFile(this)">
+      </div>
+      <p class="hint" style="margin:7px 0 0">對準包裝背面的「成分分析／保證分析」那一塊拍，照片<b>不會上傳</b>，在你手機裡認字。認錯很常見，所以要你按一下才會填進去。</p>
+      ${this.state==='loading'||this.state==='running'?`<div class="ocr-prog">${esc(this.msg||'處理中…')}</div>`:''}
+      ${this.state==='error'?`<div class="ocr-prog" style="color:var(--danger);font-weight:700">${esc(this.msg)}</div>`:''}
+      ${this.state==='done'?`
+        ${h&&(h.moisture!=null||h.kcal100!=null)?`
+          <div class="ocr-hit"><span class="lbl">讀到的候選</span>
+            ${h.moisture!=null?`<button class="opt sm" onclick="OCR.apply('moisturePct',${h.moisture})">含水量 ${h.moisture}% → 填入</button>`:''}
+            ${h.kcal100!=null?`<button class="opt sm" onclick="OCR.apply('kcalPer100g',${h.kcal100})">${esc(h.kcalNote||'')}${h.kcal100} kcal/100g → 填入</button>`:''}
+          </div>`:
+          `<div class="ocr-prog">沒認出「水分％」或「kcal」的數字。可能是字太小、反光、或包裝用的字型認不出來——換個角度再拍，或直接手動填下面兩格。</div>`}
+        <details style="margin-top:6px"><summary class="hint" style="cursor:pointer">看辨識到的原始文字</summary>
+          <div class="ocr-raw">${esc(this.raw||'（空）')}</div></details>`:''}
+    </div>`;
+  },
+  apply(field, val){
+    Settings.grabFoodInputs();
+    Settings._foodForm[field]=val;
+    if(field==='kcalPer100g') Settings._foodForm.estimated=false;
+    Settings.renderFoodSheet();
+    toast('已填入，請跟包裝再核對一次');
+  },
+  async loadLib(){
+    if(window.Tesseract) return window.Tesseract;
+    if(this._lib) return this._lib;
+    this._lib = new Promise((resolve,reject)=>{
+      const s=document.createElement('script');
+      s.src=OCR_CDN;
+      s.onload=()=>window.Tesseract?resolve(window.Tesseract):reject(new Error('載入後找不到辨識引擎'));
+      s.onerror=()=>reject(new Error('載入辨識引擎失敗'));
+      document.head.appendChild(s);
+    });
+    return this._lib;
+  },
+  async handleFile(input){
+    const file=input.files&&input.files[0]; input.value='';
+    if(!file) return;
+    this.state='loading'; this.msg='正在準備辨識引擎（第一次要連網下載，之後就快了）…';
+    this.hits=null; this.raw='';
+    Settings.grabFoodInputs(); Settings.renderFoodSheet();
+    try{
+      const T=await this.loadLib();
+      this.state='running'; this.msg='辨識中…'; Settings.renderFoodSheet();
+      const res=await T.recognize(file,'eng',{
+        logger:m=>{
+          if(m.status==='recognizing text'){
+            this.msg='辨識中… '+Math.round((m.progress||0)*100)+'%';
+            const el=document.querySelector('.ocr-prog'); if(el) el.textContent=this.msg;
+          }
+        }
+      });
+      this.raw=(res&&res.data&&res.data.text||'').trim();
+      this.hits=parseLabelText(this.raw);
+      this.state='done'; this.msg='';
+    }catch(e){
+      this.state='error';
+      this.msg = navigator.onLine
+        ? '辨識引擎載入失敗（可能被網路擋住）。這個功能需要連外網，其他功能不受影響——請直接手動填下面兩格。'
+        : '目前離線，辨識引擎還沒下載過，無法使用。請連網後再試，或直接手動填。';
+    }
+    Settings.grabFoodInputs(); Settings.renderFoodSheet();
+  }
+};
+/* 從 OCR 文字裡挑「水分 %」與「熱量」。純函式，方便單獨驗證。
+   支援：水分/moisture/水份 ≤ 10%、ME 3800 kcal/kg、385 kcal/100g、
+   89 kcal/罐(需克數，故不採用) 等常見標法。 */
+function parseLabelText(text){
+  const out={moisture:null,kcal100:null,kcalNote:''};
+  if(!text) return out;
+  // 全形數字與百分號正規化；OCR 常把 % 認成 %／º／9%
+  let t=text.replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0))
+            .replace(/％/g,'%').replace(/，/g,',');
+  // 去掉千分位逗號（3,977 → 3977），否則會只讀到後三碼
+  let prev; do{ prev=t; t=t.replace(/(\d),(\d{3})(?!\d)/g,'$1$2'); }while(t!==prev);
+  // --- 水分 ---
+  const mRe=/(?:水\s*[分份]|moisture|水分含量)[^0-9%]{0,12}?([0-9]{1,2}(?:\.[0-9])?)\s*%/i;
+  let m=t.match(mRe);
+  if(m){ const v=parseFloat(m[1]); if(v>=0&&v<=100) out.moisture=v; }
+  // --- 熱量 ---
+  // 1a) 「398 kcal/100g」（數字在前）
+  let k=t.match(/([0-9]{2,4}(?:\.[0-9])?)\s*(?:kcal|大卡|千卡)\s*[\/每]?\s*(?:per\s*)?100\s*g/i);
+  if(k){ out.kcal100=round1(parseFloat(k[1])); return out; }
+  // 1b) 「每 100 g 含熱量 398 kcal」（數字在後）
+  k=t.match(/(?:每|per)\s*100\s*(?:g|公克|克)[^0-9]{0,14}([0-9]{2,4}(?:\.[0-9])?)\s*(?:kcal|大卡|千卡)/i);
+  if(k){ out.kcal100=round1(parseFloat(k[1])); return out; }
+  // 2) 每 kg（代謝能 ME），÷10
+  k=t.match(/([0-9]{3,5}(?:\.[0-9])?)\s*(?:kcal|大卡|千卡)\s*[\/每]?\s*(?:per\s*)?(?:kg|公斤|1000\s*g)/i);
+  if(k){ const v=parseFloat(k[1]); if(v>=1000&&v<=8000){ out.kcal100=round1(v/10); out.kcalNote='由 '+v+' kcal/kg 換算 → '; return out; } }
+  // 3) 只出現「ME ... kcal」時取最接近的數字
+  k=t.match(/(?:代謝能|metabolizable\s*energy|\bME\b)[^0-9]{0,16}([0-9]{3,5})/i);
+  if(k){ const v=parseFloat(k[1]);
+    if(v>=1000&&v<=8000){ out.kcal100=round1(v/10); out.kcalNote='由 '+v+' kcal/kg 換算 → '; }
+    else if(v>=20&&v<=900){ out.kcal100=round1(v); }
+  }
+  return out;
+}
+
+/* ============================================================
    啟動
    ============================================================ */
 function handleSetupLink(){
@@ -1508,6 +2699,34 @@ function handleSetupLink(){
   }catch(e){ console.warn('setup link', e); }
   history.replaceState(null,'',location.pathname+location.search);
 }
+/* 標題列：品牌圖示＋（可自訂的）工具名稱 */
+function appName(){
+  try{ return (localStorage.getItem(APP_NAME_KEY)||'').trim() || DEFAULT_APP_NAME; }
+  catch(e){ return DEFAULT_APP_NAME; }
+}
+function setAppName(name){
+  const v=(name||'').trim();
+  try{ v ? localStorage.setItem(APP_NAME_KEY,v) : localStorage.removeItem(APP_NAME_KEY); }catch(e){}
+  renderBrand();
+  toast(v ? '名稱已更新' : '已改回預設名稱');
+}
+function renderBrand(){
+  const ico=$('#brandIcon');
+  if(ico){ ico.style.color='var(--accent)';
+    ico.innerHTML=`<svg viewBox="0 0 24 24" fill="currentColor">${ICONS.paw}</svg>`; }
+  const nm=$('#brandName'); if(nm) nm.textContent=appName();
+  document.title=appName();
+}
+/* PWA：加到主畫面／離線開啟。用網址開才註冊；
+   本機 file:// 雙擊開時瀏覽器不允許 Service Worker，靜默略過即可。 */
+function registerSW(){
+  if(!('serviceWorker' in navigator)) return;
+  if(!location.protocol.startsWith('http')) return;
+  navigator.serviceWorker.register('sw.js').catch(e=>console.info('SW 未註冊（不影響使用）', e && e.message));
+}
+
+Theme.init();
+renderBrand();
 loadDB();
 handleSetupLink();
 UI.renderNav();
@@ -1515,6 +2734,7 @@ UI.go('today');
 Sync.updatePill();
 Sync.startPolling();
 if(Sync.enabled()) Sync.run();
+registerSW();
 </script>
 </body>
 </html>
