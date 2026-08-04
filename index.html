@@ -7,12 +7,12 @@
 <meta name="description" content="記錄貓咪的大小便、飲食飲水、體重與保健品用藥，自動換算攝水量與熱量。">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="貓咪日誌">
+<meta name="apple-mobile-web-app-title" content="喵日誌">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232c6e7f'/%3E%3Cpath d='M18 26 18 15l8 6a20 20 0 0 1 12 0l8-6v11a17 14 0 1 1-36 0z' fill='%23fff'/%3E%3Ccircle cx='26' cy='33' r='2.6' fill='%232c6e7f'/%3E%3Ccircle cx='38' cy='33' r='2.6' fill='%232c6e7f'/%3E%3Cpath d='M32 38.5a3 3 0 0 1-3-2.2h6a3 3 0 0 1-3 2.2z' fill='%232c6e7f'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232c6e7f'/%3E%3Cpath d='M18 26 18 15l8 6a20 20 0 0 1 12 0l8-6v11a17 14 0 1 1-36 0z' fill='%23fff'/%3E%3Ccircle cx='26' cy='33' r='2.6' fill='%232c6e7f'/%3E%3Ccircle cx='38' cy='33' r='2.6' fill='%232c6e7f'/%3E%3Cpath d='M32 38.5a3 3 0 0 1-3-2.2h6a3 3 0 0 1-3 2.2z' fill='%232c6e7f'/%3E%3C/svg%3E">
 <link rel="manifest" href="manifest.json">
-<title>貓咪照護日誌</title>
+<!-- 啟動後 renderBrand() 會換成使用者自訂的名字；這裡放預設值 --><title>喵日誌</title>
 <script>
 /* 深色模式：在畫面繪製前先套用，避免閃白 */
 (function(){
@@ -1052,7 +1052,8 @@ const Today = {
     $('#page-today').innerHTML = `
       <div class="card" style="text-align:center;padding:36px 20px">
         <div>${iconRound('cat',60,'var(--accent)')}</div>
-        <h2 style="margin:10px 0 6px">歡迎使用貓咪照護日誌</h2>
+        ${/* 用 appName()，否則改過名字的人會看到標題列叫「小虎日誌」、歡迎詞卻叫別的 */''}
+        <h2 style="margin:10px 0 6px">歡迎使用${esc(appName())}</h2>
         <p class="lede" style="margin:0 auto 18px">先建立第一隻貓的資料，就可以開始記錄大小便、飲食飲水與體重。</p>
         <button class="btn accent lg" onclick="Settings.editCat()">＋ 新增貓咪</button>
         <p class="hint" style="margin-top:14px">之後可在「設定」新增更多貓咪或調整資料。</p>
@@ -1963,7 +1964,7 @@ const Report = {
              if(!sa.length) return liveSupps().length ? '保健品／用藥：期間內沒有記到' : null;
              return '保健品／用藥：\n'+sa.map(a=>
                `  ${a.name}${a.doseText?` ${a.doseText}`:''}　${a.n} 次（最後 ${fmtDate(dkey(new Date(a.last)))}）`).join('\n'); })(),
-      `（由貓咪照護日誌產出，數值依食物庫設定換算、僅供參考）`
+      `（由${appName()}產出，數值依食物庫設定換算、僅供參考）`
     ].filter(Boolean).join('\n');
     navigator.clipboard.writeText(txt).then(()=>toast('已複製，可貼到 LINE'))
       .catch(()=>{ prompt('手動複製：', txt); });
@@ -2015,7 +2016,9 @@ const Settings = {
             </div>
             <span class="item-act"><button class="icon" onclick="Settings.editFood('${f.id}')" aria-label="編輯 ${esc(f.name)}">${icon('edit',12)} 編輯</button></span>
           </div>`).join('')}
-        </div>`:'<p class="empty">還沒有食物。點下面「＋ 新增食物」自己建，或用「一鍵加入」帶入常用的。</p>'}
+        ${/* 「一鍵加入我家常用食物」在 v1.5 已移除，改成下面的「從常見市售食物挑」——
+             這句空狀態文案當時漏改，一直指著一個不存在的按鈕（v1.6 修） */''}
+        </div>`:'<p class="empty">還沒有食物。用「＋ 新增食物」照包裝自己建，或按「從常見市售食物挑」從內建清單挑。</p>'}
         <div class="row" style="margin-top:10px">
           <button class="btn sm accent" onclick="Settings.editFood()">＋ 新增食物</button>
           <button class="btn sm ghost" onclick="Settings.openFoodLib()">${icon('search',14)} 從常見市售食物挑</button>
@@ -2708,6 +2711,7 @@ function setAppName(name){
   const v=(name||'').trim();
   try{ v ? localStorage.setItem(APP_NAME_KEY,v) : localStorage.removeItem(APP_NAME_KEY); }catch(e){}
   renderBrand();
+  UI.rerender();          // 畫面上其他寫著工具名稱的地方（例如空狀態的歡迎詞）也要跟著換
   toast(v ? '名稱已更新' : '已改回預設名稱');
 }
 function renderBrand(){
