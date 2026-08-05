@@ -6,7 +6,7 @@
    刻意「不」快取任何使用者資料——資料一律存在 localStorage，
    同步走 Apps Script，這裡只放靜態檔。
    改版時把 CACHE 的版本號 +1，舊快取會在啟用時清掉。 */
-const CACHE = 'catcare-v1.8';
+const CACHE = 'catcare-v1.8.1';
 const ASSETS = ['./', './index.html', './guide.html', './manifest.json'];
 
 self.addEventListener('install', e => {

@@ -473,7 +473,7 @@ function iconRound(name, size, bg){
 }
 
 /* ---------- 常數 ---------- */
-const APP_VERSION = 'v1.8';
+const APP_VERSION = 'v1.8.1';
 const APP_DATE = '2026-08-04';
 /* 工具名稱可自訂：預設給一個通用名字，每個人可以改成自家貓的名字。
    存在本機設定，不隨雲端同步（同一份資料在不同裝置可以叫不同名字）。 */
@@ -2372,9 +2372,9 @@ const Settings = {
       <div class="sec"><div class="sec-label">名稱（含品牌口味好辨認）</div>
         <input type="text" id="fdName" value="${esc(f.name)}" placeholder="例如：ｘｘ 雞肉主食罐 80g" style="width:100%">
         <div class="row" style="margin-top:8px">
-          <button class="btn sm ghost" onclick="Settings.searchFood()">${icon('search',14)} 上網查這個食物的標示</button>
+          <button class="btn sm ghost" onclick="Settings.searchFood()">${icon('search',14)} Google 這個品名</button>
         </div>
-        <p class="hint" style="margin:6px 0 0">會開新分頁搜尋「名稱＋水分＋熱量」，找官方或包裝標示回來填；只要建一次，之後餵食直接選。</p></div>
+        <p class="hint" style="margin:6px 0 0"><b>只是幫你把搜尋字串打好、開一個新分頁</b>——工具讀不到別的網站的內容（瀏覽器的跨站限制），數字還是要你看了自己填回來。只要建一次，之後餵食直接選。</p></div>
       <div class="sec"><div class="sec-label">類型（選了會先帶入該類型的典型值，可以改）</div>
         <div class="opt-group">${FOOD_TYPES.map(t=>
           `<button class="opt sm ${f.type===t?'active':''}" onclick="Settings.pickFoodType('${t}')">${t}</button>`).join('')}</div>
@@ -2407,7 +2407,9 @@ const Settings = {
   searchFood(){
     const n=$('#fdName').value.trim();
     if(!n){ toast('先輸入食物名稱再查'); return; }
-    window.open('https://www.google.com/search?q='+encodeURIComponent(n+' 貓 水分 熱量 kcal 成分分析'),'_blank');
+    /* 針對「成分分析／保證分析」那張表下關鍵字，比籠統的「水分 熱量」少搜到購物頁 */
+    window.open('https://www.google.com/search?q='+encodeURIComponent(
+      '"'+n+'" 貓 成分分析 保證分析 水分 代謝能 kcal'),'_blank');
   },
   saveFood(){
     const name=$('#fdName').value.trim();
@@ -2526,10 +2528,12 @@ const Settings = {
       <div class="sec"><div class="sec-label">規格／內容物（可空，自己看得懂就好）</div>
         <input type="text" id="spSpec" value="${esc(f.spec||'')}" placeholder="例如：某某牌 500mg/顆" style="width:100%">
         <div class="row" style="margin-top:8px">
-          <button class="btn sm ghost" onclick="Settings.searchSupp()">${icon('search',14)} 上網查這個保健品</button>
+          <button class="btn sm ghost" onclick="Settings.searchSupp()">${icon('search',14)} Google 這個品名</button>
         </div>
-        <p class="hint" style="margin:6px 0 0">會開新分頁搜尋「品名＋貓＋成分＋建議用量」，查到再自己填回來。
-          <b>不知道一顆是多少也沒關係</b>——獸醫問的通常就是「一天幾顆」，「顆／匙」本身就是有效的記錄單位，這格空著不影響任何功能。</p>
+        <p class="hint" style="margin:6px 0 0"><b>這顆按鈕只是幫你把搜尋字串打好、開一個新分頁</b>，
+          <b>不會</b>把成分抓回來填——工具讀不到別的網站的內容（瀏覽器的跨站限制），而且成分數字工具也不會拿去算任何東西。</p>
+        <p class="hint" style="margin:4px 0 0"><b>不知道一顆是多少完全沒關係</b>——獸醫問的通常就是「一天幾顆」，
+          「顆／匙」本身就是有效的記錄單位。<b>這整格空著不影響任何功能</b>，手邊有罐子的話直接把牌子打上去最快。</p>
       </div>
       <div class="sec"><div class="sec-label">要不要提醒我？</div>
         <div class="opt-group">
@@ -2549,7 +2553,8 @@ const Settings = {
     this.grabSuppInputs();
     const n=(this._suppForm.name||'').trim();
     if(!n){ toast('先輸入名稱再查'); return; }
-    window.open('https://www.google.com/search?q='+encodeURIComponent(n+' 貓 保健品 成分 每顆 建議用量'),'_blank');
+    window.open('https://www.google.com/search?q='+encodeURIComponent(
+      '"'+n+'" 貓 成分 營養標示 每顆 建議餵食量'),'_blank');
   },
   saveSupp(){
     this.grabSuppInputs();
