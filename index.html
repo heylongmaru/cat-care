@@ -473,7 +473,7 @@ function iconRound(name, size, bg){
 }
 
 /* ---------- 常數 ---------- */
-const APP_VERSION = 'v1.6';
+const APP_VERSION = 'v1.8';
 const APP_DATE = '2026-08-04';
 /* 工具名稱可自訂：預設給一個通用名字，每個人可以改成自家貓的名字。
    存在本機設定，不隨雲端同步（同一份資料在不同裝置可以叫不同名字）。 */
@@ -559,7 +559,34 @@ const DER_SOURCE_NOTE = '因子區間參考 Royal Canin 台灣「貓熱量計算
             預設會在到期時提醒，因為這種一個月一次的最容易忘。
    每個品項自己帶「常用劑量」，記錄時直接沿用 → 都吃一樣的人按一下就結束。
    ------------------------------------------------------------ */
-const SUPP_UNITS = ['顆','粒','包','ml','滴','泵','g','匙','支','次'];
+const SUPP_UNITS = ['顆','粒','包','ml','滴','泵','g','匙','公分','支','次'];
+/* 常用品項的「名稱模板」——刻意只有名稱、單位、節奏，
+   沒有品牌、沒有成分數字、也沒有建議劑量。三個理由：
+   (a) 工具不會拿保健品的成分數字算任何東西（不像食物的水分／熱量會進統計），
+       所以維護一份含規格的品牌清單是純成本；
+   (b) 該給多少隨產品與貓的體重差很多，工具不該替獸醫決定；
+   (c) 廠商會改配方，品牌清單很快就過期。
+   這裡的價值只有兩個：省打字，以及提醒使用者「有哪些東西是可以記的」。
+   everyDays 只在「產品標示本來就是那個間隔」時才給起始值，其餘留給預設。 */
+const SUPP_PRESETS = [
+  {n:'魚油',         k:'daily', u:'顆'},
+  {n:'益生菌',       k:'daily', u:'包'},
+  {n:'離胺酸',       k:'daily', u:'顆'},
+  {n:'牛磺酸',       k:'daily', u:'顆'},
+  {n:'綜合維他命',   k:'daily', u:'顆'},
+  {n:'化毛膏',       k:'daily', u:'公分'},
+  {n:'潔牙粉',       k:'daily', u:'匙'},
+  {n:'關節保養',     k:'daily', u:'顆'},
+  {n:'泌尿保健',     k:'daily', u:'顆'},
+  {n:'腎臟保健',     k:'daily', u:'包'},
+  {n:'皮毛保養',     k:'daily', u:'顆'},
+  {n:'酵素',         k:'daily', u:'匙'},
+  {n:'每日藥',       k:'daily', u:'顆'},
+  {n:'體外驅蟲滴劑', k:'cycle', u:'支', d:30},
+  {n:'體內驅蟲藥',   k:'cycle', u:'顆'},
+  {n:'心絲蟲預防',   k:'cycle', u:'次', d:30},
+  {n:'疫苗',         k:'cycle', u:'次', d:365}
+];
 const SUPP_KINDS = [
   {v:'daily', l:'每天／經常吃', d:'今日頁點一下就記錄，預設不會催你'},
   {v:'cycle', l:'週期性（幾天一次）', d:'顯示「上次◯◯・已幾天」，到期才提醒'}
@@ -604,7 +631,10 @@ const DEFAULT_DB = () => ({
   foods:[],           // {id,name,type,moisturePct,kcalPer100g,defaultGrams,updatedAt,deleted}
   supps:[],           // {id,name,kind:'daily'|'cycle',dose,unit,everyDays,remind,note,updatedAt,deleted}
   records:[],         // {id,catId,ts,type,data:{},updatedAt,deleted}
-  settings:{ syncUrl:'', syncKey:'', deviceName:'', lastPullAt:0, autoSync:true }
+  settings:{ syncUrl:'', syncKey:'', deviceName:'', lastPullAt:0, autoSync:true,
+    /* 全域快捷數字（存本機、不進同步——這是「這台裝置怎麼順手」的偏好，
+       跟貓的資料無關。個別食物自己設的 quickGrams 優先於這裡。） */
+    feedQuickGrams:null, drinkQuickMl:null }
 });
 /* kind ↔ DB 陣列。新增種類時只要動這裡；
    ※ 一定要「查得到才處理」，不能用 else 掃進 records——
@@ -691,6 +721,29 @@ function kcalTarget(cat){           // DER = 70 × kg^0.75 × 係數
   const kg = latestWeight(cat.id);
   if(!kg) return null;
   return Math.round(70 * Math.pow(kg, 0.75) * (cat.derFactor || 1.2));
+}
+/* 外部來的數字（匯入別人的備份、共用試算表拉回來的）不能直接插進 HTML——
+   它可能根本不是數字，而是一段標籤。一律強制轉成數字，轉不出來就顯示「—」。
+   ※ 這種地方**不能只靠 esc()**：在 onclick="…" 這類 JS 字串脈絡裡，
+     瀏覽器會先把 HTML 實體解回來，`&#39;` 仍然會變成真正的單引號而跳脫字串。
+     唯一可靠的作法是「先變成數字」。 */
+function num(v, fallback='—'){
+  const n = Number(v);
+  return Number.isFinite(n) ? String(round1(n)) : fallback;
+}
+/* 「20, 40, 85」→ [20,40,85]。接逗號、頓號、全形逗號、全形數字、空白；
+   去重、排序、最多 6 個（再多按鈕會擠爆手機那一排）。
+   ※ 順序很重要：先四捨五入再過濾。反過來寫的話 0.04 會先通過 >0、
+     然後被 round1 變成 0，最後在餵食頁做出一顆「0 g」的按鈕。 */
+function parseQuickGrams(s){
+  if(s==null || s==='') return null;
+  if(Array.isArray(s)) s = s.join(',');
+  const list = String(s)
+    .replace(/[０-９．]/g, c=>c==='．'?'.':String.fromCharCode(c.charCodeAt(0)-0xFEE0))
+    .replace(/[、，]/g, ',').split(/[,\s]+/)
+    .map(x=>parseFloat(x)).map(round1).filter(v=>Number.isFinite(v) && v>0 && v<5000);
+  const uniq = [...new Set(list)].sort((a,b)=>a-b).slice(0,6);
+  return uniq.length ? uniq : null;
 }
 function feedCalc(food, grams){     // 一餐的水分與熱量
   return {
@@ -1189,10 +1242,10 @@ const Recs = {
       return {sub:(size?('尿塊 '+size):'')+(d.colorAbn?'、顏色/氣味異常':''), abn:!!d.colorAbn};
     }
     if(r.type==='feed'){
-      return {sub:`${esc(d.foodName||'')} ${d.grams} g → 水 ${d.waterMl} ml・${d.kcal} kcal${d.leftover?`（剩 ${d.leftover} g 已扣除）`:''}`, abn:false};
+      return {sub:`${esc(d.foodName||'')} ${num(d.grams)} g → 水 ${num(d.waterMl)} ml・${num(d.kcal)} kcal${d.leftover?`（剩 ${num(d.leftover)} g 已扣除）`:''}`, abn:false};
     }
-    if(r.type==='drink') return {sub:`${d.ml} ml${d.method==='est'?'（估計）':''}`, abn:false};
-    if(r.type==='weight') return {sub:`${d.kg} kg`, abn:false};
+    if(r.type==='drink') return {sub:`${num(d.ml)} ml${d.method==='est'?'（估計）':''}`, abn:false};
+    if(r.type==='weight') return {sub:`${num(d.kg)} kg`, abn:false};
     if(r.type==='event') return {sub:esc(d.kind||'事件'), abn:true};
     if(r.type==='supp'){
       /* sub 會被原樣塞進 HTML，所以 unit 一定要 esc()——它可能不是我們寫的：
@@ -1362,15 +1415,20 @@ const Sheet = {
     const left  = parseFloat(f.leftover)||0;
     const net   = Math.max(0, gross-left);
     const calc  = food ? feedCalc(food, net) : null;
-    const last  = this.lastFeed(this.cur.catId);
+    const recent = this.recentFeeds(this.cur.catId);
+    const lastOfThis = food ? this.lastFeedOf(this.cur.catId, food.id) : null;
     return `
-      ${last&&!this.cur.editId?`<div class="sec">
-        <button class="btn sm ghost" style="width:100%" onclick="Sheet.repeatLastFeed()">
-          ${icon('repeat',14)} 同上一餐：${esc(last.data.foodName||'')} ${last.data.grams} g</button>
+      ${recent.length&&!this.cur.editId?`<div class="sec">
+        <div class="sec-label">${icon('repeat',13)} 最近餵過（點一下帶入食物與克數）</div>
+        <div class="opt-group">${recent.map(r=>
+          `<button class="opt sm ${f.foodId===r.foodId&&String(f.grams)===String(r.grams)?'active':''}"
+            onclick="Sheet.repeatFeed('${r.foodId}')">${esc(r.name)}<span class="s-dose">${num(r.grams)} g</span></button>`).join('')}
+        </div>
+        <p class="hint" style="margin:6px 0 0">乾糧和罐頭交叉餵的話，這裡會分開列出各自最近一次的量。</p>
       </div>`:''}
       <div class="sec"><div class="sec-label">吃什麼？（設定 → 食物庫可新增）</div>
         ${foods.length? `<select style="width:100%" onchange="Sheet.feedPickFood(this.value)">
-          ${foods.map(x=>`<option value="${x.id}" ${x.id===f.foodId?'selected':''}>${esc(x.name)}（${esc(x.type)}・水 ${x.moisturePct}%・${x.kcalPer100g} kcal/100g）</option>`).join('')}
+          ${foods.map(x=>`<option value="${x.id}" ${x.id===f.foodId?'selected':''}>${esc(x.name)}（${esc(x.type)}・水 ${num(x.moisturePct)}%・${num(x.kcalPer100g)} kcal/100g）</option>`).join('')}
         </select>` : `<p class="empty" style="padding:4px 0">食物庫是空的。</p>
           <button class="btn sm accent" onclick="Sheet.close();UI.go('settings');Settings.editFood()">＋ 先新增一種食物</button>`}
       </div>
@@ -1381,7 +1439,10 @@ const Sheet = {
             style="width:110px" oninput="Sheet.setNoRender('grams',this.value);Sheet.feedPreview()">
           <div class="opt-group">${this.feedQuickGrams(food).map(g=>
             `<button class="opt sm ${String(f.grams)===String(g)?'active':''}" onclick="Sheet.set('grams','${g}')">${g} g</button>`).join('')}
-          </div></div></div>
+          </div></div>
+        ${lastOfThis?`<p class="hint" style="margin:7px 0 0">上次餵這個是 <b>${num(lastOfThis.data.grams)} g</b>
+          <button class="opt sm" style="margin-left:6px" onclick="Sheet.set('grams','${Number(lastOfThis.data.grams)||0}')">帶入</button></p>`:''}
+        </div>
       <div class="sec"><div class="sec-label">吃剩多少（g，可空；會從攝取扣掉）</div>
         <input type="number" inputmode="decimal" min="0" step="1" value="${esc(f.leftover)}" placeholder="0"
           style="width:110px" oninput="Sheet.setNoRender('leftover',this.value);Sheet.feedPreview()">
@@ -1390,15 +1451,31 @@ const Sheet = {
         `${icon('pee',14,'var(--i-drink)')} 水分 <span>${calc.waterMl} ml</span> ${icon('fire',14,'var(--i-event)')} 熱量 <span>${calc.kcal} kcal</span>（實吃 ${net} g）`:
         '選食物並輸入克數後自動計算'}</div>`:''}`;
   },
-  /* 快捷克數：跟著「目前選到的食物」走，而不是把所有食物的常用量混在一起 */
+  /* 快捷克數，三層優先序（愈上面愈具體）：
+       1. 這個食物自己設的 quickGrams   ——「這罐就是 210 g」這種例外
+       2. 設定頁的全域快捷克數           ——「我懶得每個都設，就這 3–5 個」
+       3. 自動推算（依常用一餐量，再退到依類型的級距）
+     為什麼要有第 2 層：好幾種食物混著吃時，逐一設定的成本比它省下的力氣還高。
+     為什麼還要保留第 1 層：乾糧 20 g 和大罐 210 g 差太多，總有幾筆需要自己指定。 */
   feedQuickGrams(food){
+    /* 一律強制轉成數字：這些值會被插進 onclick="Sheet.set('grams','…')"，
+       那是 JS 字串脈絡，esc() 擋不住（實體會先被解回來）。
+       而 quickGrams 可能來自匯入的備份或共用試算表，不保證是數字。 */
+    const clean = a => Array.isArray(a)
+      ? a.map(Number).filter(v=>Number.isFinite(v) && v>0 && v<5000).slice(0,6) : [];
+    const own = clean(food && food.quickGrams);
+    if(own.length) return own;
+    const global = clean(DB.settings.feedQuickGrams);
+    if(global.length) return global;
     const d = food ? parseFloat(food.defaultGrams) : NaN;
     let list;
     if(d>0){
       list = [Math.round(d/2), Math.round(d), Math.round(d*1.5), Math.round(d*2)];
     }else{
       const t = food ? food.type : '';
-      list = (t==='主食罐') ? [40,70,85,100]
+      /* 主食罐刻意含一個「整罐」級距——台灣常見的主食罐多是 80–200 g，
+         原本 40/70/85/100 全是小數字，餵大罐的人一個都用不到。 */
+      list = (t==='主食罐') ? [40,85,100,200]
            : (t==='副食罐/餐包') ? [35,50,70,85]
            : (t==='零食') ? [2,5,10,15]
            : (t==='鮮食/自製') ? [40,60,80,100]
@@ -1406,21 +1483,50 @@ const Sheet = {
     }
     return list.filter(v=>v>0).filter((v,i,a)=>a.indexOf(v)===i).sort((a,b)=>a-b);
   },
+  /* 喝水的快捷 ml：設定頁的全域值優先，沒設就用預設 */
+  drinkQuickMl(){
+    const g = Array.isArray(DB.settings.drinkQuickMl)
+      ? DB.settings.drinkQuickMl.map(Number)
+          .filter(v=>Number.isFinite(v) && v>0 && v<5000).slice(0,6) : [];
+    return g.length ? g : [5,10,20,30,50];
+  },
   /* 這隻貓最近一筆餵食 */
   lastFeed(catId){
     return liveRecs().filter(r=>r.type==='feed' && r.catId===catId)
       .sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0] || null;
   },
-  repeatLastFeed(){
-    const r = this.lastFeed(this.cur.catId);
-    if(!r){ toast('還沒有上一餐可以帶入'); return; }
-    const food = liveFoods().find(f=>f.id===(r.data||{}).foodId);
-    if(!food){ toast('上一餐的食物已從食物庫移除，請重新選一個'); return; }
+  /* 這隻貓最近一次餵「這個食物」——乾濕交叉餵時，「上一餐」幾乎不會是你正要餵的那個 */
+  lastFeedOf(catId, foodId){
+    return liveRecs().filter(r=>r.type==='feed' && r.catId===catId &&
+        r.data && r.data.foodId===foodId)
+      .sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0] || null;
+  },
+  /* 最近餵過的「不同食物」各一筆（最多 3 種，仍在食物庫裡的才列）。
+     原本的「同上一餐」只看整體最後一筆——乾糧和罐頭交叉餵的人永遠按不到自己要的那個。 */
+  recentFeeds(catId, limit=3){
+    const seen = new Set(), out = [];
+    const recs = liveRecs().filter(r=>r.type==='feed' && r.catId===catId)
+      .sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+    for(const r of recs){
+      const d = r.data||{};
+      if(!d.foodId || seen.has(d.foodId)) continue;
+      const food = liveFoods().find(x=>x.id===d.foodId);
+      if(!food) continue;                       // 已從食物庫移除的就不列，免得按了才說沒有
+      seen.add(d.foodId);
+      out.push({ foodId:d.foodId, name:food.name, grams:d.grams });
+      if(out.length>=limit) break;
+    }
+    return out;
+  },
+  repeatFeed(foodId){
+    const r = this.lastFeedOf(this.cur.catId, foodId);
+    const food = liveFoods().find(f=>f.id===foodId);
+    if(!r || !food){ toast('這個食物已從食物庫移除，請重新選一個'); return; }
     this.cur.form.foodId = food.id;
     this.cur.form.grams  = r.data.grams;
     this.cur.form.leftover = '';
     this.render();
-    toast(`已帶入：${food.name} ${r.data.grams} g`);
+    toast(`已帶入：${food.name} ${num(r.data.grams)} g`);
   },
   feedPickFood(id){
     const f = liveFoods().find(x=>x.id===id);
@@ -1443,7 +1549,7 @@ const Sheet = {
         <div class="row">
           <input type="number" inputmode="decimal" min="0" step="1" value="${esc(f.ml)}" placeholder="ml"
             style="width:110px" oninput="Sheet.setNoRender('ml',this.value)">
-          <div class="opt-group">${[5,10,20,30,50].map(v=>
+          <div class="opt-group">${this.drinkQuickMl().map(v=>
             `<button class="opt sm" onclick="Sheet.set('ml','${v}')">${v}</button>`).join('')}
           </div></div>
         <p class="hint" style="margin:8px 0 0">量法：有刻度的水碗直接讀，或整碗秤重（1 g ≈ 1 ml），換水時記差值。</p>
@@ -1461,7 +1567,7 @@ const Sheet = {
       <div class="sec"><div class="sec-label">體重（kg）</div>
         <input type="number" inputmode="decimal" min="0" step="0.01" value="${esc(f.kg)}" placeholder="例如 4.20"
           style="width:140px" oninput="Sheet.setNoRender('kg',this.value)">
-        ${last?`<p class="hint" style="margin:8px 0 0">上次記錄：${last} kg</p>`:''}
+        ${last?`<p class="hint" style="margin:8px 0 0">上次記錄：${num(last)} kg</p>`:''}
         <p class="hint" style="margin:4px 0 0">量法：抱貓一起站上體重計再減自己，或用寵物秤。</p>
         <p class="hint" style="margin:4px 0 0">不用每天量——攝水與熱量的建議值會自動沿用最近一次體重（建議每週量一次就好）。</p>
       </div>`;
@@ -1896,7 +2002,7 @@ const Report = {
         ${wRecs.length?`<div class="tbl-scroll"><table><tr><th>日期</th><th>體重 kg</th><th>變化</th></tr>
           ${wRecs.map((r,i)=>{const prev=i>0?wRecs[i-1].data.kg:null;
             const diff=prev!=null?round1(r.data.kg-prev):null;
-            return `<tr><td>${fmtDate(dkey(new Date(r.ts)))}</td><td>${r.data.kg}</td>
+            return `<tr><td>${fmtDate(dkey(new Date(r.ts)))}</td><td>${num(r.data.kg)}</td>
               <td>${diff==null?'—':(diff>0?'+':'')+diff}</td></tr>`;}).join('')}</table></div>`
           :'<p class="empty">期間內沒有體重記錄。</p>'}
         ${(suppAgg.length||liveSupps().length)?`
@@ -2008,9 +2114,10 @@ const Settings = {
               <div class="item-name">${esc(f.name)}</div>
               <div class="item-meta">
                 <span class="chip">${esc(f.type)}</span>
-                <span class="chip key">水 ${f.moisturePct}%</span>
-                <span class="chip key">${f.kcalPer100g} kcal/100g</span>
-                ${f.defaultGrams?`<span class="chip">常用 ${f.defaultGrams} g</span>`:''}
+                <span class="chip key">水 ${num(f.moisturePct)}%</span>
+                <span class="chip key">${num(f.kcalPer100g)} kcal/100g</span>
+                ${f.defaultGrams?`<span class="chip">常用 ${num(f.defaultGrams)} g</span>`:''}
+                ${Array.isArray(f.quickGrams)&&f.quickGrams.length?`<span class="chip">快捷 ${esc(f.quickGrams.join('/'))} g</span>`:''}
                 ${f.estimated?`<span class="chip" style="color:var(--warn)">估計值</span>`:''}
               </div>
             </div>
@@ -2030,6 +2137,27 @@ const Settings = {
           <input type="file" id="importFoodsFile" accept=".json,application/json" hidden onchange="Settings.importFoods(this)">
         </div>
         <p class="hint" style="margin:8px 0 0">食物庫可以單獨匯出成一個檔案傳給別人（只有食物，不含你家貓的任何記錄）。朋友匯入之後就不用重打一次包裝上的數字。</p>
+      </div>
+
+      <div class="card">
+        <h2>${icon('target',18,'var(--accent)')} 記錄時的快捷數字</h2>
+        <p class="hint">記錄時那一排「按一下就填」的按鈕。設一次全部食物共用，<b>不用每個食物都設</b>。</p>
+        <div class="row">
+          <label class="field" style="flex:1;min-width:200px">餵食常用克數
+            <input type="text" id="qgFeed" value="${esc(Array.isArray(s.feedQuickGrams)?s.feedQuickGrams.join(', '):'')}"
+              placeholder="例如 20, 40, 85, 210"></label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <label class="field" style="flex:1;min-width:200px">喝水常用 ml
+            <input type="text" id="qgDrink" value="${esc(Array.isArray(s.drinkQuickMl)?s.drinkQuickMl.join(', '):'')}"
+              placeholder="留空用預設 5, 10, 20, 30, 50"></label>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn sm accent" onclick="Settings.saveQuick()">儲存</button>
+        </div>
+        <p class="hint" style="margin:10px 0 0">用逗號分隔，各最多 6 個，留空就回到自動計算／預設值。
+          <b>某個食物特別不一樣</b>（例如只有那罐是 210 g），就到食物庫編輯那一筆填它自己的快捷克數——<b>個別設定優先於這裡</b>。</p>
+        <p class="hint" style="margin:4px 0 0">這組數字只存在這台裝置，不會同步給其他照顧者（跟深淺色、工具名稱一樣）。</p>
       </div>
 
       <div class="card">
@@ -2118,6 +2246,17 @@ const Settings = {
     el.innerHTML =
       (Sync.lastError?`<span style="color:var(--danger);font-weight:700">上次同步失敗：${esc(Sync.lastError)}</span><br>`:'')+
       `待同步 ${PENDING.length} 筆・上次成功：${t?t.toLocaleString('zh-TW',{hour12:false}):'尚未'}`;
+  },
+  /* 全域快捷數字。看不懂就擋下來講清楚，不默默丟掉（同食物庫那格的作法）。 */
+  saveQuick(){
+    const fRaw=($('#qgFeed').value||'').trim(), dRaw=($('#qgDrink').value||'').trim();
+    const fList=parseQuickGrams(fRaw), dList=parseQuickGrams(dRaw);
+    if(fRaw && !fList){ toast('餵食常用克數看不懂，請用逗號分隔的數字，例如 20, 40, 85'); return; }
+    if(dRaw && !dList){ toast('喝水常用 ml 看不懂，請用逗號分隔的數字，例如 10, 20, 50'); return; }
+    DB.settings.feedQuickGrams=fList;
+    DB.settings.drinkQuickMl=dList;
+    saveDB();
+    toast('已儲存 ✓'); this.render();
   },
   saveSync(){
     DB.settings.syncUrl=$('#syncUrl').value.trim();
@@ -2222,6 +2361,7 @@ const Settings = {
     const m=g('fdMoist');  if(m!==null) f.moisturePct=m;
     const k=g('fdKcal');   if(k!==null) f.kcalPer100g=k;
     const d=g('fdDef');    if(d!==null) f.defaultGrams=d;
+    const q=g('fdQuick');  if(q!==null) f.quickGramsText=q;
   },
   setFoodField(k,v){ this.grabFoodInputs(); this._foodForm[k]=v; this.renderFoodSheet(); },
   renderFoodSheet(){
@@ -2245,6 +2385,12 @@ const Settings = {
         <label class="field">含水量 %<input type="number" id="fdMoist" inputmode="decimal" min="0" max="100" step="0.5" value="${esc(f.moisturePct)}" placeholder="如 10" style="width:130px"></label>
         <label class="field">熱量 kcal/100g<input type="number" id="fdKcal" inputmode="decimal" min="0" step="1" value="${esc(f.kcalPer100g)}" placeholder="如 398" style="width:130px"></label>
         <label class="field">常用一餐量 g<input type="number" id="fdDef" inputmode="decimal" min="0" step="1" value="${esc(f.defaultGrams)}" placeholder="可空" style="width:110px"></label>
+      </div>
+      <div class="sec" style="margin-top:10px">
+        <div class="sec-label">記錄時的快捷克數（可空，用逗號分隔）</div>
+        <input type="text" id="fdQuick" value="${esc(f.quickGramsText!=null?f.quickGramsText:(Array.isArray(f.quickGrams)?f.quickGrams.join(', '):''))}"
+          placeholder="例如 20, 40, 85" style="width:100%">
+        <p class="hint" style="margin:6px 0 0">餵食時這個食物底下會出現這幾顆一按就填的按鈕，最多 6 個。<b>留空的話沿用自動計算</b>（依上面的常用一餐量推 ×0.5／×1／×1.5／×2）。每個食物各自設定——乾糧和主食罐的常用量本來就差很多。</p>
       </div>
       <div class="sec" style="margin-top:10px">
         <div class="opt-group">
@@ -2273,6 +2419,10 @@ const Settings = {
     obj.name=name; obj.type=this._foodForm.type||'乾糧';
     obj.moisturePct=moist; obj.kcalPer100g=kcal;
     obj.defaultGrams=parseFloat($('#fdDef').value)||null;
+    const qRaw=($('#fdQuick').value||'').trim();
+    const qList=parseQuickGrams(qRaw);
+    if(qRaw && !qList){ toast('快捷克數看不懂，請用逗號分隔的數字，例如 20, 40, 85'); return; }
+    obj.quickGrams=qList;
     obj.estimated=!!this._foodForm.estimated;
     upsert('food',obj);
     Sheet.close(); toast('已儲存 ✓'); this.render();
@@ -2302,6 +2452,29 @@ const Settings = {
     const s=g('spSpec');  if(s!==null) f.spec=s;
   },
   setSuppField(k,v){ this.grabSuppInputs(); this._suppForm[k]=v; this.renderSuppSheet(); },
+  /* 點常用品項：帶名稱／單位／節奏，**劑量與提醒照該節奏的預設**，
+     everyDays 只有在該品項本來就有慣用間隔時才給起始值。 */
+  pickSuppPreset(i){
+    const p = SUPP_PRESETS[i]; if(!p) return;
+    this.grabSuppInputs();
+    const f = this._suppForm;
+    const newKind = (p.k==='cycle') ? 'cycle' : 'daily';
+    const kindChanged = f.kind !== newKind;
+    f.name = p.n;
+    f._presetName = p.n;         // 記住這個名字是模板帶進來的，highlight 才不會誤標
+    f.kind = newKind;
+    f.unit = SUPP_UNITS.includes(p.u) ? p.u : '顆';
+    if(kindChanged) f.remind = (newKind==='cycle');   // 沒換節奏就別動使用者調過的提醒
+    if(newKind==='cycle'){
+      /* 模板自己有慣用間隔就用它；沒有的話保留使用者已經填的，都沒有才給預設。
+         原本是無條件覆寫，會把剛打好的 90 天默默改回 30。 */
+      f.everyDays = p.d ? p.d : (parseFloat(f.everyDays)>0 ? f.everyDays : SUPP_DEFAULT_EVERY);
+    }else{
+      f.everyDays = '';
+    }
+    f.dose = '';                 // 刻意留空：同一個名稱底下不同產品的一顆差很多
+    this.renderSuppSheet();
+  },
   /* 換種類時把「要不要提醒」帶回該種類的預設：
      每天吃的預設不催（沒點只代表沒記），週期性的預設要催（一個月一次最容易忘）。 */
   pickSuppKind(k){
@@ -2321,7 +2494,14 @@ const Settings = {
         <button class="sheet-close" onclick="Sheet.close()" aria-label="關閉">✕</button></div>
       <div class="sec"><div class="sec-label">名稱</div>
         ${/* 例子刻意不寫任何商品名：滴劑／驅蟲藥品牌很多，寫死一個對別人沒意義 */''}
-        <input type="text" id="spName" value="${esc(f.name)}" placeholder="例如：魚油、益生菌、潔牙粉、體外驅蟲滴劑" style="width:100%"></div>
+        <input type="text" id="spName" value="${esc(f.name)}" placeholder="例如：魚油、益生菌、潔牙粉、體外驅蟲滴劑" style="width:100%">
+        ${this._suppEditId?'':`
+        <div style="margin-top:9px">
+          <div class="sec-label">常用品項（點一下帶入，之後可以改）</div>
+          <div class="opt-group">${SUPP_PRESETS.map((p,i)=>
+            `<button class="opt sm ${(f._presetName===p.n&&f.name===p.n)?'active':''}" onclick="Settings.pickSuppPreset(${i})">${esc(p.n)}</button>`).join('')}</div>
+          <p class="hint" style="margin:6px 0 0">只帶入<b>名稱、單位與「每天／週期」</b>省你打字。<b>劑量一律留空</b>——同樣叫魚油，不同產品一顆差很多，請照你手上那罐填。清單裡沒有的直接在上面打名字就好。</p>
+        </div>`}</div>
       <div class="sec"><div class="sec-label">多久給一次？</div>
         <div class="opt-group">${SUPP_KINDS.map(k=>
           `<button class="opt sm ${f.kind===k.v?'active':''}" onclick="Settings.pickSuppKind('${k.v}')">${esc(k.l)}</button>`).join('')}</div>
@@ -2403,6 +2583,7 @@ const Settings = {
     const foods = liveFoods().map(f=>({
       name:f.name, type:f.type, moisturePct:f.moisturePct,
       kcalPer100g:f.kcalPer100g, defaultGrams:f.defaultGrams||null,
+      quickGrams:Array.isArray(f.quickGrams)&&f.quickGrams.length?f.quickGrams:null,
       estimated:!!f.estimated, libId:f.libId||null
     }));
     if(!foods.length){ toast('食物庫是空的，沒有東西可以匯出'); return; }
@@ -2435,6 +2616,7 @@ const Settings = {
             type: FOOD_TYPES.includes(o.type)?o.type:'乾糧',
             moisturePct:m, kcalPer100g:k,
             defaultGrams: parseFloat(o.defaultGrams)||null,
+            quickGrams: parseQuickGrams(Array.isArray(o.quickGrams)?o.quickGrams.join(','):o.quickGrams),
             estimated: !!o.estimated, libId: o.libId||null });
           added++;
         }
