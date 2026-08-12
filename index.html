@@ -77,7 +77,13 @@ html[data-theme="dark"] .notice{border-color:#6d3b38;background:#33201e;color:#f
 html[data-theme="dark"] .toast{background:var(--accent);color:#10171d}
 html[data-theme="dark"] .dirty{background:var(--warn-soft);border-color:#4a3a18;color:var(--warn)}
 *{box-sizing:border-box}
-html,body{margin:0;padding:0}
+html,body{margin:0;padding:0;max-width:100%}
+/* 保險：任何漏網的溢出都不該讓使用者橫向捲出去又拉不回來。
+   優先用 clip（不建立捲動容器、不影響 position:sticky/fixed）；舊瀏覽器退回 hidden。
+   放 html 不放 body，底部導覽與彈窗的 fixed 定位才不受影響。
+   需要橫向捲的表格一律包 .tbl-scroll，它自帶 overflow-x:auto，不受這條影響。 */
+html{overflow-x:hidden}
+@supports (overflow-x:clip){ html{overflow-x:clip} }
 body{font-family:var(--font);color:var(--text);background:var(--bg);line-height:1.6;
   font-size:15px;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;
   word-break:break-word;overflow-wrap:anywhere}
@@ -119,8 +125,14 @@ button.icon,.icon{border:1px solid var(--line);background:#fff;color:var(--muted
   border-radius:6px;cursor:pointer;padding:4px 9px;font-size:13px;font-family:inherit;transition:all .12s}
 .icon:hover{border-color:var(--accent);color:var(--accent)}
 .icon.danger:hover{border-color:var(--danger);color:var(--danger)}
-.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
-label.field{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted);font-weight:600}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;min-width:0;max-width:100%}
+/* min-width:0 不能省：flex 子項預設 min-width:auto，會被最長的內容
+   （例如下拉選單裡某個很長的貓咪名字）撐開，裡面的 max-width:100% 就失效，
+   整個畫面被拉走而且捲不回來。 */
+.row > *{min-width:0;max-width:100%}
+label.field{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted);font-weight:600;
+  min-width:0;max-width:100%}
+label.field select,label.field input,label.field textarea{max-width:100%}
 input[type=text],input[type=date],input[type=number],input[type=month],input[type=datetime-local],select,textarea{
   font-family:inherit;font-size:16px;color:var(--text);border:1px solid var(--line);
   border-radius:var(--radius-sm);padding:9px 11px;background:#fff;min-width:0;max-width:100%}
@@ -473,7 +485,7 @@ function iconRound(name, size, bg){
 }
 
 /* ---------- 常數 ---------- */
-const APP_VERSION = 'v1.8.1';
+const APP_VERSION = 'v1.8.2';
 const APP_DATE = '2026-08-04';
 /* 工具名稱可自訂：預設給一個通用名字，每個人可以改成自家貓的名字。
    存在本機設定，不隨雲端同步（同一份資料在不同裝置可以叫不同名字）。 */
