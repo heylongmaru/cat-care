@@ -7,7 +7,7 @@
    同步走 Apps Script，這裡只放靜態檔。
    改版時把 CACHE 的版本號 +1，舊快取會在啟用時清掉。
    ※ v1.8.2 與 v1.9 曾漏改這裡，導致舊快取不會被清除——**每次動 index.html 都要順手改**。 */
-const CACHE = 'catcare-v2.1';
+const CACHE = 'catcare-v2.2';
 const ASSETS = ['./', './index.html', './guide.html', './manifest.json',
   './icon-180.png', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 

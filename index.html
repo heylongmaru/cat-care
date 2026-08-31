@@ -45,7 +45,7 @@
   --font:"PingFang TC","Noto Sans TC","Microsoft JhengHei",-apple-system,system-ui,sans-serif;
   /* 圖示配色（可愛風：彩色圓底＋白色圖形） */
   --i-poop:#a9743f; --i-pee:#e0a43c; --i-feed:#e08a4c; --i-drink:#4aa3c4;
-  --i-weight:#7b8fa8; --i-event:#d9694f; --i-supp:#7b5aa6;
+  --i-weight:#7b8fa8; --i-event:#d9694f; --i-supp:#7b5aa6; --i-vet:#4f8f6d;
 }
 /* ---------- 深色模式 ---------- */
 html[data-theme="dark"]{
@@ -58,7 +58,7 @@ html[data-theme="dark"]{
   --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.28);
   --shadow-hover:0 6px 18px rgba(0,0,0,.36);
   --i-poop:#b5834b; --i-pee:#e3ae4d; --i-feed:#e5975c;
-  --i-drink:#57b0d1; --i-weight:#8d9fb5; --i-event:#e07a61; --i-supp:#a58ac9;
+  --i-drink:#57b0d1; --i-weight:#8d9fb5; --i-event:#e07a61; --i-supp:#a58ac9; --i-vet:#68b18b;
   color-scheme:dark;
 }
 html[data-theme="dark"] .btn{border-color:var(--accent);background:var(--accent);color:#10171d}
@@ -479,6 +479,10 @@ const ICONS = {
   /* 記錄類型 */
   poop:'<path d="M9.4 7.2c-.6-1.5.3-3.2 1.9-3.6.5-.1.7.4.5.8-.5.9-.2 1.9.7 2.4l1.2.7c.9.5 1.3 1.6 1 2.5H9.9c-.6-.8-.9-1.9-.5-2.8z"/><path d="M7.6 10h9.2c1.3 0 2.3 1 2.3 2.2 0 .6-.2 1.1-.6 1.5.9.3 1.5 1.1 1.5 2.1 0 1.2-1 2.2-2.3 2.2H6.3C5 18 4 17 4 15.8c0-1 .6-1.8 1.5-2.1-.4-.4-.6-.9-.6-1.5C4.9 11 5.9 10 7.6 10z"/><circle cx="9.6" cy="13.7" r="1.05" fill="rgba(0,0,0,.34)"/><circle cx="14.4" cy="13.7" r="1.05" fill="rgba(0,0,0,.34)"/>',
   pee:'<path d="M12 3.2c3.4 4 5.8 7 5.8 9.7A5.8 5.8 0 0 1 12 18.7a5.8 5.8 0 0 1-5.8-5.8C6.2 10.2 8.6 7.2 12 3.2z"/>',
+  /* 看醫生＝出診包＋十字。十字在這裡是對的（本來就是去醫院），
+     跟 supp 那顆刻意避開十字的膠囊不會撞形狀。
+     內部細節照舊用 rgba(0,0,0,.34)，不要 #fff——白配白在彩色圓底版會整個消失。 */
+  vet:'<path d="M9 5.6c0-.9.7-1.6 1.6-1.6h2.8c.9 0 1.6.7 1.6 1.6V7h-1.8V5.8h-2.4V7H9V5.6z"/><rect x="3.4" y="7" width="17.2" height="12.4" rx="2.6"/><path d="M11.1 10.2h1.8v2.2H15.1v1.8H12.9v2.2h-1.8v-2.2H8.9v-1.8h2.2z" fill="rgba(0,0,0,.34)"/>',
   feed:'<path d="M3.6 11h16.8c.5 0 .8.4.7.9A9.2 9.2 0 0 1 12 19.4 9.2 9.2 0 0 1 2.9 11.9c-.1-.5.2-.9.7-.9z"/><circle cx="8.4" cy="7.6" r="1.7"/><circle cx="12" cy="6.3" r="1.7"/><circle cx="15.6" cy="7.6" r="1.7"/>',
   /* 喝水＝水碗（刻意不用水滴，水滴留給「小便」，兩者形狀才不會撞） */
   drink:'<path d="M2.4 9.6h19.2c.6 0 1 .5.9 1.1l-.7 4.1A7.4 7.4 0 0 1 14.5 21h-5A7.4 7.4 0 0 1 2.2 14.8l-.7-4.1c-.1-.6.3-1.1.9-1.1z"/><path d="M4.6 12.2c1.5 0 1.5 1.3 3 1.3s1.5-1.3 3-1.3 1.5 1.3 3 1.3 1.5-1.3 3-1.3 1.5 1.3 3 1.3l-.3 1.9c-1.3 0-1.4-1.2-2.7-1.2s-1.5 1.3-3 1.3-1.5-1.3-3-1.3-1.5 1.3-3 1.3-1.4-1.2-2.7-1.2z" fill="rgba(0,0,0,.34)"/><path d="M12 2.6c1.3 1.6 2 2.7 2 3.6a2 2 0 1 1-4 0c0-.9.7-2 2-3.6z"/>',
@@ -533,7 +537,7 @@ function iconRound(name, size, bg){
 }
 
 /* ---------- 常數 ---------- */
-const APP_VERSION = 'v2.1';
+const APP_VERSION = 'v2.2';
 const APP_DATE = '2026-08-04';
 /* 工具名稱可自訂：預設給一個通用名字，每個人可以改成自家貓的名字。
    存在本機設定，不隨雲端同步（同一份資料在不同裝置可以叫不同名字）。 */
@@ -547,8 +551,14 @@ const REC_TYPES = {
   drink: { icon:'drink',  color:'var(--i-drink)',  label:'喝水' },
   weight:{ icon:'weight', color:'var(--i-weight)', label:'體重' },
   event: { icon:'event',  color:'var(--i-event)',  label:'異常/事件' },
-  supp:  { icon:'supp',   color:'var(--i-supp)',   label:'保健品/用藥' }
+  supp:  { icon:'supp',   color:'var(--i-supp)',   label:'保健品/用藥' },
+  /* 看醫生（v2.2）：非每日、單筆事件。刻意獨立成一種類型而不是塞進「異常/事件」——
+     它有自己的欄位（原因、醫生說什麼、費用、下次回診），
+     而且獸醫報告要能單獨列出「這段期間看了幾次、為什麼」。 */
+  vet:   { icon:'vet',    color:'var(--i-vet)',    label:'看醫生' }
 };
+/* 看診原因的常用選項。點了會填進去，也可以直接在下面那格自己打。 */
+const VET_REASONS = ['例行健檢','打疫苗','不舒服','回診','結紮/絕育','洗牙','急診','其他'];
 /* 便況 1–7 分：描述對齊 Purina 的 Faecal Scoring Chart（貓狗通用，7 分制）。
    該表以 2 分為理想；貓實務上 2–3 分都算可接受，4 分以上就值得留意。
    來源：https://vetcentre.purina.co.uk/ 的 Faecal score chart（2026-08 查證）
@@ -1110,9 +1120,37 @@ const Alerts = {
     return { pct:round1(pct), from:prev.data.kg, to:now.data.kg,
              days:Math.round((nowT-new Date(prev.ts).getTime())/(24*HOURS)) };
   },
+  /* 下次回診：取「有填回診日的最新一筆看診記錄」。
+     為什麼只看最新一筆：回診日是會被後續看診覆寫的——上次說一週後回診，
+     結果三天後又跑一趟並改成兩週後，該聽新的那次。 */
+  nextVisit(catId){
+    const list = liveRecs().filter(r=>r.type==='vet' && r.catId===catId
+      && r.data && r.data.nextDate)
+      .sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+    if(!list.length) return null;
+    const r = list[0];
+    const t0 = new Date(todayKey()+'T00:00').getTime();
+    const t1 = new Date(r.data.nextDate+'T00:00').getTime();
+    if(isNaN(t1)) return null;
+    return { days: Math.round((t1-t0)/(24*HOURS)), date:r.data.nextDate, reason:r.data.reason||'' };
+  },
   list(catId){
     if(catId===UNKNOWN_CAT) return [];
     const out=[];
+    const v = this.nextVisit(catId);
+    /* 只在七天內（含已過期）才出聲。太早提醒等於天天有一則黃卡，看久就無感了。 */
+    if(v && v.days<=7){
+      const when = v.days<0 ? `已經過了 ${-v.days} 天`
+                 : v.days===0 ? '就是今天'
+                 : `還有 ${v.days} 天`;
+      out.push({
+        sev: v.days<0 ? 'danger' : 'warn', icon:'vet',
+        title: `回診：${fmtDateFull(v.date)}（${when}）${v.reason?`・${v.reason}`:''}`,
+        body: v.days<0
+          ? '這個日期已經過了。去過了就記一筆新的看診（回診日會以最新那筆為準）；不用回診了就編輯那筆把日期清空。'
+          : '看完之後記一筆新的「看醫生」，這則提醒就會換成新的回診日。網頁版沒有推播，只有開著 App 才看得到。'
+      });
+    }
     const h = this.hoursSincePoop(catId);
     if(h!=null && h>=48){
       const days = Math.floor(h/24), rest = Math.floor(h%24);
@@ -1221,7 +1259,10 @@ const Today = {
           ${this.quickBtn('event', s.events.length? '今日 '+s.events.length+' 筆':'今日 —')}
         </div>
         <div class="row" style="justify-content:space-between;margin-top:10px">
-          <button class="btn sm ghost" onclick="Tally.open()">🌙 今天結算</button>
+          <span class="opt-group" style="flex:0 1 auto">
+            <button class="btn sm ghost" onclick="Tally.open()">🌙 今天結算</button>
+            <button class="btn sm ghost" onclick="Sheet.open('vet')">${icon('vet',14,'var(--i-vet)')} 看醫生</button>
+          </span>
           ${this.quickTapOn()
             ? '<span class="hint" style="margin:0">大便／小便點一下就記好了</span>'
             : '<span class="hint" style="margin:0">設定 → 顯示可開啟「點一下直接記」</span>'}
@@ -1363,6 +1404,13 @@ const Recs = {
       const dose = (d.dose==null||d.dose==='') ? '' : ' '+round1(+d.dose)+esc(d.unit||'');
       return {sub:esc(d.suppName||'')+dose, abn:false};
     }
+    if(r.type==='vet'){
+      const bits=[esc(d.reason||'看診')];
+      if(d.cost!=null) bits.push('NT$ '+num(d.cost));
+      if(d.nextDate) bits.push('回診 '+esc(fmtDate(d.nextDate)));
+      return {sub: bits.join('・') +
+        (d.advice?`<span class="muted">・醫生：${esc(d.advice)}</span>`:''), abn:false};
+    }
     return {sub:'',abn:false};
   },
   itemHTML(r, showDate){
@@ -1420,6 +1468,7 @@ const Sheet = {
       if(type==='drink') form={ml:'', method:'measure'};
       if(type==='weight'){ const kg=latestWeight(catId); form={kg: kg||''}; }
       if(type==='event') form={kind:'嘔吐'};
+      if(type==='vet')   form={reason:'', advice:'', cost:'', nextDate:''};
       if(type==='supp'){
         const s = (this._presetSuppId && suppById(this._presetSuppId)) || liveSupps()[0];
         form = { suppId: s?s.id:'', dose: s&&s.dose!=null?s.dose:'' };
@@ -1535,6 +1584,7 @@ const Sheet = {
     else if(c.type==='weight') body=this.weightBody(c.form);
     else if(c.type==='event') body=this.eventBody(c.form);
     else if(c.type==='supp') body=this.suppBody(c.form);
+    else if(c.type==='vet')  body=this.vetBody(c.form);
 
     $('#sheetBody').innerHTML = `
       <div class="sheet-head">
@@ -1781,6 +1831,35 @@ const Sheet = {
         <p class="hint" style="margin:8px 0 0">軟便、拉肚子請用「大便 → 異常」記，統計才算得準。</p>
       </div>`;
   },
+  /* --- 看醫生（v2.2）--- */
+  vetBody(f){
+    return `
+      <div class="sec"><div class="sec-label">為什麼去？</div>
+        <div class="opt-group">${VET_REASONS.map(k=>
+          `<button class="opt sm ${f.reason===k?'active':''}" onclick="Sheet.set('reason','${k}')">${k}</button>`).join('')}
+        </div>
+        ${/* 上面是快捷、下面才是真正存下去的值——選了可以再改成自己的說法，
+             例如點「不舒服」再改成「一直抓耳朵」。 */''}
+        <input type="text" value="${esc(f.reason||'')}" placeholder="也可以自己打，例如「一直抓耳朵」"
+          style="width:100%;margin-top:8px" oninput="Sheet.setNoRender('reason',this.value)">
+      </div>
+      <div class="sec"><div class="sec-label">醫生說什麼</div>
+        <textarea placeholder="診斷、交代事項、開了什麼藥…" oninput="Sheet.setNoRender('advice',this.value)">${esc(f.advice||'')}</textarea>
+      </div>
+      <div class="sec"><div class="sec-label">費用（可空）</div>
+        <div class="row">
+          <input type="number" inputmode="decimal" min="0" step="1" value="${esc(f.cost)}" placeholder="NT$"
+            style="width:130px" oninput="Sheet.setNoRender('cost',this.value)">
+        </div>
+        <p class="hint" style="margin:7px 0 0">填了才會出現在報告的合計；留空就完全不算。</p>
+      </div>
+      <div class="sec"><div class="sec-label">下次回診（可空）</div>
+        <input type="date" value="${esc(f.nextDate||'')}" style="width:100%"
+          oninput="Sheet.setNoRender('nextDate',this.value)">
+        <p class="hint" style="margin:7px 0 0">填了之後，快到的時候今日頁會提醒。
+          <b>只有開著 App 才看得到</b>——網頁版做不到手機推播，真的很重要的話請另外設鬧鐘。</p>
+      </div>`;
+  },
   /* --- 保健品／用藥 --- */
   /* 選單裡「還存在的品項」＋（編輯舊記錄時）那筆記錄本來指到、但已經被刪掉的品項。
      少了後者的話，select 會因為找不到對應的 option 而自動顯示第一個，
@@ -1878,6 +1957,19 @@ const Sheet = {
       data.kg=kg;
     }else if(c.type==='event'){
       data.kind=f.kind||'其他';
+    }else if(c.type==='vet'){
+      const reason=(f.reason||'').trim();
+      if(!reason){ toast('請填一下為什麼去看醫生'); return; }
+      data.reason=reason;
+      data.advice=(f.advice||'').trim();
+      /* 費用留空＝不算，不是 0。0 元（例如診所免費複診）跟「沒填」要分得出來，
+         否則報告的合計會把一堆沒填的當成 0 元照樣列進去。 */
+      const cost = (f.cost===''||f.cost==null) ? null : parseFloat(f.cost);
+      if(cost!=null && !(cost>=0)){ toast('費用請填 0 以上的數字，或留空'); return; }
+      data.cost=cost;
+      const nd=(f.nextDate||'').trim();
+      if(nd && !/^\d{4}-\d{2}-\d{2}$/.test(nd)){ toast('回診日期格式不對'); return; }
+      data.nextDate=nd||null;
     }else if(c.type==='supp'){
       if(!f.suppId){ toast('請先選一個品項'); return; }
       const s=suppById(f.suppId);              // 品項可能已被刪除，這時沿用記錄裡的名稱快照
@@ -2346,6 +2438,23 @@ const Report = {
             return `<tr><td>${fmtDate(dkey(new Date(r.ts)))}</td><td>${num(r.data.kg)}</td>
               <td>${diff==null?'—':(diff>0?'+':'')+diff}</td></tr>`;}).join('')}</table></div>`
           :'<p class="empty">期間內沒有體重記錄。</p>'}
+        ${(()=>{ const vs=this.vetVisits(cat.id); if(!vs.length) return '';
+          const paid = vs.filter(v=>v.data.cost!=null);
+          const total = paid.reduce((a,v)=>a+v.data.cost,0);
+          return `
+        <h3>看診紀錄（${vs.length} 次）</h3>
+        <div class="tbl-scroll"><table>
+          <tr><th>日期</th><th>原因</th><th>醫生說</th><th>費用</th></tr>
+          ${vs.map(v=>`<tr>
+            <td>${fmtDate(dkey(new Date(v.ts)))}</td>
+            <td>${esc(v.data.reason||'')}</td>
+            <td>${esc(v.data.advice||'—')}</td>
+            <td>${v.data.cost!=null?'NT$ '+num(v.data.cost):'—'}</td></tr>`).join('')}
+          ${paid.length?`<tr><td colspan="3"><b>合計（有填費用的 ${paid.length} 次）</b></td>
+            <td><b>NT$ ${num(total)}</b></td></tr>`:''}
+        </table></div>
+        ${paid.length<vs.length?`<p class="hint">有 ${vs.length-paid.length} 次沒填費用，沒有算進合計。</p>`:''}`;
+        })()}
         ${(suppAgg.length||liveSupps().length)?`
         <h3>保健品／用藥</h3>
         ${suppAgg.length?`<div class="tbl-scroll"><table>
@@ -2363,6 +2472,13 @@ const Report = {
         <button class="btn ghost" onclick="Report.copyText()">${icon('copy',15)} 複製文字摘要</button>
       </div>`;
     $('#reportOut').innerHTML=html;
+  },
+  /* 期間內的看診紀錄，舊到新。 */
+  vetVisits(catId){
+    const keys=new Set(this.rangeKeys());
+    return liveRecs().filter(r=> r.type==='vet' && r.catId===catId
+        && keys.has(dkey(new Date(r.ts))))
+      .sort((a,b)=>new Date(a.ts)-new Date(b.ts));
   },
   /* 期間內的保健品／用藥彙總。
      顯示用的名稱取「記錄當下存下來的 suppName」，所以品項後來被刪掉也還原得出來。 */
@@ -2407,6 +2523,15 @@ const Report = {
       `平均攝水：${Math.round(avg(s=>s.totalWaterMl))} ml/日（喝水＋食物水分）`,
       `平均熱量：${Math.round(avg(s=>s.kcal))} kcal/日`,
       abnLines.length?`異常日：\n${abnLines.join('\n')}`:'期間內無異常記錄',
+      (()=>{ const vs=this.vetVisits(cat.id);
+             if(!vs.length) return null;
+             const paid=vs.filter(v=>v.data.cost!=null);
+             const total=paid.reduce((a,v)=>a+v.data.cost,0);
+             return '看診紀錄：\n'+vs.map(v=>
+               `・${fmtDate(dkey(new Date(v.ts)))} ${v.data.reason||''}`
+               + (v.data.advice?`｜醫生：${v.data.advice}`:'')
+               + (v.data.cost!=null?`｜NT$ ${v.data.cost}`:'')).join('\n')
+               + (paid.length?`\n（合計 NT$ ${total}，${vs.length-paid.length?`另有 ${vs.length-paid.length} 次沒填費用`:'全部都有填'}）`:''); })(),
       (()=>{ const sa=this.suppSummary(cat.id);
              if(!sa.length) return liveSupps().length ? '保健品／用藥：期間內沒有記到' : null;
              return '保健品／用藥：\n'+sa.map(a=>
