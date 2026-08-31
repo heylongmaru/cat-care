@@ -10,7 +10,10 @@
 <meta name="apple-mobile-web-app-title" content="喵日誌">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232c6e7f'/%3E%3Cpath d='M18 26 18 15l8 6a20 20 0 0 1 12 0l8-6v11a17 14 0 1 1-36 0z' fill='%23fff'/%3E%3Ccircle cx='26' cy='33' r='2.6' fill='%232c6e7f'/%3E%3Ccircle cx='38' cy='33' r='2.6' fill='%232c6e7f'/%3E%3Cpath d='M32 38.5a3 3 0 0 1-3-2.2h6a3 3 0 0 1-3 2.2z' fill='%232c6e7f'/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232c6e7f'/%3E%3Cpath d='M18 26 18 15l8 6a20 20 0 0 1 12 0l8-6v11a17 14 0 1 1-36 0z' fill='%23fff'/%3E%3Ccircle cx='26' cy='33' r='2.6' fill='%232c6e7f'/%3E%3Ccircle cx='38' cy='33' r='2.6' fill='%232c6e7f'/%3E%3Cpath d='M32 38.5a3 3 0 0 1-3-2.2h6a3 3 0 0 1-3 2.2z' fill='%232c6e7f'/%3E%3C/svg%3E">
+<!-- iOS 的 apple-touch-icon 只吃 PNG：SVG 與 data: URI 都會被忽略，
+     然後 iOS 會自己截一張網頁畫面當主畫面圖示（看起來就像「瀏覽器的網頁標誌」）。
+     2026-08-31 使用者實機回報，換成真的 PNG。 -->
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
 <!-- 啟動後 renderBrand() 會換成使用者自訂的名字；這裡放預設值 --><title>喵日誌</title>
 <script>
@@ -136,6 +139,7 @@ label.field select,label.field input,label.field textarea{max-width:100%}
 input[type=text],input[type=date],input[type=number],input[type=month],input[type=datetime-local],select,textarea{
   font-family:inherit;font-size:16px;color:var(--text);border:1px solid var(--line);
   border-radius:var(--radius-sm);padding:9px 11px;background:#fff;min-width:0;max-width:100%}
+select{text-overflow:ellipsis}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
 textarea{min-height:64px;resize:vertical;line-height:1.5;width:100%}
 .tbl-scroll{overflow-x:auto}
@@ -288,7 +292,9 @@ html[data-theme="dark"] .alert-card.danger{border-color:#5c2f2a;color:var(--dang
 .sheet-mask{position:fixed;inset:0;background:rgba(31,42,51,.45);z-index:70;
   display:none;align-items:flex-end;justify-content:center}
 .sheet-mask.show{display:flex}
-.sheet{background:var(--card);width:100%;max-width:560px;max-height:88vh;max-height:88dvh;overflow-y:auto;
+/* overflow-x 明寫 clip：只寫 overflow-y:auto 的話 overflow-x 會被算成 auto，
+   一旦內容溢出就變成「彈窗自己可以橫向捲、而且捲出去拉不回來」。 */
+.sheet{background:var(--card);width:100%;max-width:560px;max-height:88vh;max-height:88dvh;overflow-y:auto;overflow-x:clip;
   border-radius:18px 18px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom));
   box-shadow:0 -8px 30px rgba(31,42,51,.18)}
 @media(min-width:761px){
@@ -300,10 +306,27 @@ html[data-theme="dark"] .alert-card.danger{border-color:#5c2f2a;color:var(--dang
 .sheet-close{border:none;background:var(--bg);color:var(--muted);width:32px;height:32px;
   border-radius:50%;cursor:pointer;font-size:16px;font-weight:700;flex:none}
 .sheet .sec{margin-bottom:14px}
+/* 「✓ 記下」永遠貼在彈窗底部，不必滑到最下面才按得到。
+   （記一次「正常大便、時間就是現在」本來只要點 2 下，卻得先滑過時間與備註兩大段。） */
+.sheet-actions{position:sticky;bottom:0;z-index:3;display:flex;gap:10px;
+  justify-content:flex-end;flex-wrap:wrap;align-items:center;
+  margin:16px -16px calc(-20px - env(safe-area-inset-bottom));
+  padding:12px 16px calc(14px + env(safe-area-inset-bottom));
+  background:var(--card);border-top:1px solid var(--line)}
+/* 收合行：一行講完現況＋一顆展開鈕（時間、備註、吃剩都用這個） */
+.collapse-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
+.collapse-line > *{min-width:0;max-width:100%}
+.collapse-line .time-picked{flex:1 1 140px;margin:0}
 .sheet .sec-label{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px}
 
 /* 選項膠囊組 */
-.opt-group{display:flex;gap:7px;flex-wrap:wrap}
+.opt-group{display:flex;gap:7px;flex-wrap:wrap;min-width:0;max-width:100%}
+/* .row > .opt-group 一定自己佔一整行。
+   為什麼不靠外層的 flex-wrap 就好：Safari 在「flex 容器裡放一個會換行的 flex 容器」時
+   不一定會把它推到下一行，而是擠在同一行讓 chip 溢出去被切掉
+   （2026-08-31 使用者 iPhone Safari 實機出現；Chromium 在 260/280/300/320/390/414px
+   全部重現不出來，所以上一輪的 RWD 測試抓不到）。flex-basis:100% 讓兩個引擎行為一致。 */
+.row > .opt-group{flex:1 0 100%}
 .opt{border:1.5px solid var(--line);background:#fff;color:var(--text);padding:8px 14px;
   border-radius:var(--radius-pill);cursor:pointer;font-size:14.5px;font-weight:700;
   font-family:inherit;transition:all .12s;min-height:38px}
@@ -490,7 +513,7 @@ function iconRound(name, size, bg){
 }
 
 /* ---------- 常數 ---------- */
-const APP_VERSION = 'v1.9';
+const APP_VERSION = 'v2.0';
 const APP_DATE = '2026-08-04';
 /* 工具名稱可自訂：預設給一個通用名字，每個人可以改成自家貓的名字。
    存在本機設定，不隨雲端同步（同一份資料在不同裝置可以叫不同名字）。 */
@@ -1334,6 +1357,9 @@ const Sheet = {
       }
     }
     this.cur = {type, editId:editId||null, catId, ts, form};
+    /* 每次開啟都從「收起來」開始：常見情況（時間就是現在、沒備註、沒吃剩）
+       完全不用展開，一開彈窗就看得到「✓ 記下」。 */
+    this.tsOpen = false; this.noteOpen = false; this.leftoverOpen = false;
     this.render();
     $('#sheetMask').classList.add('show');
     document.body.style.overflow='hidden';
@@ -1388,6 +1414,43 @@ const Sheet = {
   renderTsLabel(){
     const el=$('#tsPicked'); if(el) el.innerHTML=this.tsLabel();
   },
+  /* --- 時間段：預設收合成一行 ---
+     絕大多數記錄的時間就是「現在」，不需要動。展開才出現快捷與原生選擇器。
+     附帶好處：原生 datetime-local 一聚焦，iOS 的鍵盤工具列就會蓋住下面那排時間快捷，
+     收合之後那個遮擋情境也一起消失。 */
+  tsSectionHTML(){
+    const open = !!this.tsOpen;
+    return `<div class="sec">
+      <div class="collapse-line">
+        <p class="time-picked" id="tsPicked">${this.tsLabel()}</p>
+        <button class="opt sm" onclick="Sheet.toggleTs()">${open?'收起':'改時間'}</button>
+      </div>
+      ${open?`<div style="margin-top:9px">
+        ${this.timeQuickHTML()}
+        <input type="datetime-local" value="${toLocalDT(this.cur.ts)}" style="width:100%"
+          onchange="Sheet.setTs(this.value)">
+      </div>`:''}
+    </div>`;
+  },
+  toggleTs(){ this.tsOpen = !this.tsOpen; this.render(); },
+  /* --- 備註：空的就只留一顆「＋ 備註」--- */
+  noteSectionHTML(){
+    const c = this.cur;
+    const has = String((c.form&&c.form.note)||'').trim() !== '';
+    if(!this.noteOpen && !has)
+      return `<div class="sec"><button class="opt sm" onclick="Sheet.openNote()">＋ 備註</button></div>`;
+    return `<div class="sec"><div class="sec-label">備註（可空）</div>
+      <textarea placeholder="想補充的觀察…" oninput="Sheet.setNoRender('note',this.value)">${esc(c.form.note||'')}</textarea>
+    </div>`;
+  },
+  openNote(){
+    this.noteOpen = true; this.render();
+    setTimeout(()=>{ const t=$('#sheetBody textarea'); if(t) t.focus(); }, 20);
+  },
+  openLeftover(){
+    this.leftoverOpen = true; this.render();
+    setTimeout(()=>{ const el=$('#leftoverInput'); if(el) el.focus(); }, 20);
+  },
 
   render(){
     const c = this.cur; if(!c) return;
@@ -1411,18 +1474,9 @@ const Sheet = {
       ${cats.length>1 ? `<div class="sec"><div class="sec-label">哪一隻貓？</div>
         ${UI.catBar(c.catId,'Sheet.pickCat',{always:true,small:true,withUnknown:allowUnknown})}</div>`:''}
       ${body}
-      <div class="sec">
-        <div class="sec-label">時間</div>
-        ${this.timeQuickHTML()}
-        <input type="datetime-local" value="${toLocalDT(c.ts)}" style="width:100%"
-          onchange="Sheet.setTs(this.value)">
-        <p class="time-picked" id="tsPicked">${this.tsLabel()}</p>
-      </div>
-      <div class="sec">
-        <div class="sec-label">備註（可空）</div>
-        <textarea placeholder="想補充的觀察…" oninput="Sheet.setNoRender('note',this.value)">${esc(c.form.note||'')}</textarea>
-      </div>
-      <div class="row" style="justify-content:flex-end">
+      ${this.tsSectionHTML()}
+      ${this.noteSectionHTML()}
+      <div class="sheet-actions">
         ${c.editId?'<button class="btn danger" onclick="Sheet.close();Recs.del(\''+c.editId+'\')">刪除</button>':''}
         <button class="btn ghost" onclick="Sheet.close()">取消</button>
         <button class="btn accent lg" onclick="Sheet.save()">✓ 記下</button>
@@ -1496,8 +1550,13 @@ const Sheet = {
       </div>`:''}
       <div class="sec"><div class="sec-label">吃什麼？（設定 → 食物庫可新增）</div>
         ${foods.length? `<select style="width:100%" onchange="Sheet.feedPickFood(this.value)">
-          ${foods.map(x=>`<option value="${x.id}" ${x.id===f.foodId?'selected':''}>${esc(x.name)}（${esc(x.type)}・水 ${num(x.moisturePct)}%・${num(x.kcalPer100g)} kcal/100g）</option>`).join('')}
-        </select>` : `<p class="empty" style="padding:4px 0">食物庫是空的。</p>
+          ${foods.map(x=>`<option value="${x.id}" ${x.id===f.foodId?'selected':''}>${esc(x.name)}</option>`).join('')}
+        </select>
+        ${food?`<p class="hint" style="margin:6px 0 0">${esc(food.type)}・水 ${num(food.moisturePct)}%・${num(food.kcalPer100g)} kcal/100g</p>`:''}`
+        /* 選項裡刻意只放名稱：把「（乾糧・水 12.7%・455 kcal/100g）」也塞進 option，
+           在手機上根本讀不完，還會把 select 的固有寬度撐到超過螢幕。
+           2026-08-31 使用者截圖實證。細節改放在下拉底下那一行。 */
+        : `<p class="empty" style="padding:4px 0">食物庫是空的。</p>
           <button class="btn sm accent" onclick="Sheet.close();UI.go('settings');Settings.editFood()">＋ 先新增一種食物</button>`}
       </div>
       ${foods.length?`
@@ -1511,10 +1570,12 @@ const Sheet = {
         ${lastOfThis?`<p class="hint" style="margin:7px 0 0">上次餵這個是 <b>${num(lastOfThis.data.grams)} g</b>
           <button class="opt sm" style="margin-left:6px" onclick="Sheet.set('grams','${Number(lastOfThis.data.grams)||0}')">帶入</button></p>`:''}
         </div>
-      <div class="sec"><div class="sec-label">吃剩多少（g，可空；會從攝取扣掉）</div>
-        <input type="number" inputmode="decimal" min="0" step="1" value="${esc(f.leftover)}" placeholder="0"
+      ${(this.leftoverOpen || String(f.leftover||'').trim()!=='')
+        ? `<div class="sec"><div class="sec-label">吃剩多少（g，會從攝取扣掉）</div>
+        <input type="number" id="leftoverInput" inputmode="decimal" min="0" step="1" value="${esc(f.leftover)}" placeholder="0"
           style="width:110px" oninput="Sheet.setNoRender('leftover',this.value);Sheet.feedPreview()">
-      </div>
+      </div>`
+        : `<div class="sec"><button class="opt sm" onclick="Sheet.openLeftover()">＋ 有吃剩</button></div>`}
       <div class="calc-preview" id="feedPreview">${calc?
         `${icon('pee',14,'var(--i-drink)')} 水分 <span>${calc.waterMl} ml</span> ${icon('fire',14,'var(--i-event)')} 熱量 <span>${calc.kcal} kcal</span>（實吃 ${net} g）`:
         '選食物並輸入克數後自動計算'}</div>`:''}`;
