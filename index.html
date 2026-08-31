@@ -167,6 +167,16 @@ th{font-size:12px;color:var(--muted);font-weight:700}
   box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:80;
   max-width:88vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+/* 帶按鈕的 toast（一鍵直記的「改細節／復原」）：要能點，所以放開 pointer-events。
+   刻意做成 toast 而不是確認對話框——「記一次大便」按錯的代價是刪一筆，
+   為此每次都跳確認，等於把省下來的那一下又還回去。 */
+.toast.act{pointer-events:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  justify-content:center;padding:10px 14px}
+.toast.act .tmsg{font-weight:700}
+.toast.act button{font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;
+  border:1.5px solid rgba(255,255,255,.45);background:transparent;color:#fff;
+  border-radius:var(--radius-pill);padding:5px 12px;min-height:32px}
+.toast.act button:hover{background:rgba(255,255,255,.16)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:560px){.grid{grid-template-columns:1fr}header.app h1{font-size:19px}}
 
@@ -259,6 +269,16 @@ html[data-theme="dark"] .alert-card.danger{border-color:#5c2f2a;color:var(--dang
 
 /* 時間快捷 */
 .time-quick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:7px}
+/* 今天結算的計數列 */
+.tally-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;
+  padding:10px 0;border-bottom:1px solid var(--line)}
+.tally-row:last-child{border-bottom:none}
+.tally-row > *{min-width:0}
+.tally-name{flex:1 1 120px;font-weight:800;color:var(--ink)}
+.tally-ctrl{display:flex;align-items:center;gap:8px;flex:none}
+.tally-ctrl button{min-width:38px;font-size:16px;line-height:1}
+.tally-ctrl button[disabled]{opacity:.4;cursor:default}
+.tally-n{min-width:24px;text-align:center;font-size:17px;font-weight:800;color:var(--ink)}
 .time-picked{font-size:13px;color:var(--accent);font-weight:700;margin:6px 0 0}
 .time-picked .muted{font-weight:600}
 
@@ -513,7 +533,7 @@ function iconRound(name, size, bg){
 }
 
 /* ---------- 常數 ---------- */
-const APP_VERSION = 'v2.0';
+const APP_VERSION = 'v2.1';
 const APP_DATE = '2026-08-04';
 /* 工具名稱可自訂：預設給一個通用名字，每個人可以改成自家貓的名字。
    存在本機設定，不隨雲端同步（同一份資料在不同裝置可以叫不同名字）。 */
@@ -661,8 +681,26 @@ function fmtDate(k){ const [y,m,d]=k.split('-'); return `${m}/${d}`; }
 function fmtDateFull(k){ const [y,m,d]=k.split('-'); const w='日一二三四五六'[new Date(+y,+m-1,+d).getDay()]; return `${y}/${m}/${d}（${w}）`; }
 function toLocalDT(ts){ const d=new Date(ts); return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+'T'+pad2(d.getHours())+':'+pad2(d.getMinutes()); }
 function round1(x){ return Math.round(x*10)/10; }
-function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show');
+function toast(msg){ const t=$('#toast'); t.className='toast'; t.textContent=msg; t.classList.add('show');
   clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2200); }
+/* 帶動作的 toast。actions = [{label, fn}]，fn 存在 toastAct._fns 裡由 onclick 索引呼叫
+   （直接內嵌函式字串會有跳脫問題，而這裡的 label 是我們自己寫死的）。 */
+function toastAct(msg, actions, ms){
+  const t=$('#toast');
+  toastAct._fns = (actions||[]).map(a=>a.fn);
+  t.className='toast act';
+  t.innerHTML = `<span class="tmsg">${esc(msg)}</span>` +
+    (actions||[]).map((a,i)=>`<button type="button" onclick="toastAct.run(${i})">${esc(a.label)}</button>`).join('');
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t=setTimeout(()=>{ t.classList.remove('show'); toastAct._fns=null; }, ms||5000);
+}
+toastAct.run = function(i){
+  const f = toastAct._fns && toastAct._fns[i];
+  $('#toast').classList.remove('show');
+  clearTimeout(toast._t); toastAct._fns=null;
+  if(typeof f==='function') f();
+};
 
 /* ---------- 資料層 ---------- */
 const DEFAULT_DB = () => ({
@@ -674,7 +712,9 @@ const DEFAULT_DB = () => ({
   settings:{ syncUrl:'', syncKey:'', deviceName:'', lastPullAt:0, autoSync:true,
     /* 全域快捷數字（存本機、不進同步——這是「這台裝置怎麼順手」的偏好，
        跟貓的資料無關。個別食物自己設的 quickGrams 優先於這裡。） */
-    feedQuickGrams:null, drinkQuickMl:null }
+    feedQuickGrams:null, drinkQuickMl:null,
+    /* 今日頁的大便／小便點一下就直接存（不開視窗）。預設開。 */
+    quickTap:true }
 });
 /* kind ↔ DB 陣列。新增種類時只要動這裡；
    ※ 一定要「查得到才處理」，不能用 else 掃進 records——
@@ -1180,6 +1220,12 @@ const Today = {
           ${this.quickBtn('weight', kg? '目前 '+kg+' kg':'尚未記錄')}
           ${this.quickBtn('event', s.events.length? '今日 '+s.events.length+' 筆':'今日 —')}
         </div>
+        <div class="row" style="justify-content:space-between;margin-top:10px">
+          <button class="btn sm ghost" onclick="Tally.open()">🌙 今天結算</button>
+          ${this.quickTapOn()
+            ? '<span class="hint" style="margin:0">大便／小便點一下就記好了</span>'
+            : '<span class="hint" style="margin:0">設定 → 顯示可開啟「點一下直接記」</span>'}
+        </div>
       </div>
 
       <div class="card">
@@ -1252,9 +1298,33 @@ const Today = {
         ${daily.length?`<p class="hint" style="margin:10px 0 0">點一下就記下來（帶入該品項的常用劑量），再點一次取消。要改劑量或時間，到「記錄」頁點那一筆的編輯。</p>`:''}
       </div>`;
   },
+  /* 一鍵直記：大便／小便點一下就存，不開彈窗，改用可復原的 toast 收尾。
+     為什麼只有這兩種：它們有明確的預設值（正常／中），而且是一天要記最多次的。
+     餵食要克數、喝水要 ml、體重要數字、事件要類型，沒有「合理的預設」可以直接存，
+     硬要一鍵只會產生一堆要回頭修的爛資料。 */
+  QUICK_TAP_TYPES: ['poop','pee'],
+  quickTapOn(){ return DB.settings.quickTap !== false; },
+  tap(type){
+    if(!this.QUICK_TAP_TYPES.includes(type) || !this.quickTapOn()) return Sheet.open(type);
+    const cats = liveCats();
+    if(!cats.length){ toast('請先在「設定」新增貓咪'); return; }
+    let catId = (UI.selCat && (UI.selCat===UNKNOWN_CAT || cats.some(c=>c.id===UI.selCat)))
+      ? UI.selCat : cats[0].id;
+    const id = uid();
+    NEW_THIS_LOAD.add('record|'+id);
+    const data = type==='poop' ? {status:'normal', score:null, note:''} : {size:'M', colorAbn:false, note:''};
+    upsert('record', { id, catId, ts:new Date().toISOString(), type, data });
+    UI.rerender();
+    toastAct(`已記一次${REC_TYPES[type].label}・${type==='poop'?'正常':'尿塊中'} ✓`, [
+      {label:'改細節', fn:()=>Sheet.open(null, id)},
+      {label:'復原',   fn:()=>{ if(!hardDeleteIfUnsent('record', id)) softDelete('record', id);
+                                toast('已復原'); UI.rerender(); }}
+    ]);
+  },
   quickBtn(type, caption){
     const t = REC_TYPES[type];
-    return `<button class="quick-btn" onclick="Sheet.open('${type}')">
+    const instant = this.QUICK_TAP_TYPES.includes(type) && this.quickTapOn();
+    return `<button class="quick-btn" onclick="Today.tap('${type}')"${instant?' title="點一下就直接記，之後可在提示列改細節或復原"':''}>
       <span class="qi ico-round" style="background:${t.color}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff">${ICONS[t.icon]}</svg></span>
       <span class="ql">${t.label}</span>
       <span class="qc">${caption}</span></button>`;
@@ -1275,11 +1345,11 @@ const Recs = {
         if(d.blood) bits.push('血絲'); if(d.mucus) bits.push('黏液');
         return {sub:bits.join('、')||'異常', abn:true};
       }
-      return {sub: shape ? `正常・${shape}` : '正常', abn:false};
+      return {sub: (shape ? `正常・${shape}` : '正常') + (d.viaTally?'・日結補記':''), abn:false};
     }
     if(r.type==='pee'){
       const size={S:'小',M:'中',L:'大'}[d.size]||'';
-      return {sub:(size?('尿塊 '+size):'')+(d.colorAbn?'、顏色/氣味異常':''), abn:!!d.colorAbn};
+      return {sub:(size?('尿塊 '+size):'')+(d.colorAbn?'、顏色/氣味異常':'')+(d.viaTally?'・日結補記':''), abn:!!d.colorAbn};
     }
     if(r.type==='feed'){
       return {sub:`${esc(d.foodName||'')} ${num(d.grams)} g → 水 ${num(d.waterMl)} ml・${num(d.kcal)} kcal${d.leftover?`（剩 ${num(d.leftover)} g 已扣除）`:''}`, abn:false};
@@ -1775,6 +1845,11 @@ const Sheet = {
       toast('時間不能填未來的日期，請確認年份'); return;
     }
     let data={ note:(f.note||'').trim() };
+    /* 編輯一筆日結補記時保留旗標——使用者只是補細節，那筆的時間仍然不精確 */
+    if(c.editId){
+      const old = DB.records.find(x=>x.id===c.editId);
+      if(old && old.data && old.data.viaTally) data.viaTally = true;
+    }
     if(c.type==='poop'){
       data.status=f.status||'normal';
       data.score=f.score||null;                       // 形狀正常時也可以記
@@ -1868,6 +1943,94 @@ const Supp = {
    原本要補昨天的記錄，得開彈窗、在原生 datetime-local 上把日期滑回去，
    麻煩到讓人乾脆不補——先問日期就少掉那一步。
    ============================================================ */
+/* ============================================================
+   今天結算（Tally）
+   給「懶得一天開五次 App」的情境：晚上一次把今天漏記的大小便補上。
+   設計上的三條紅線：
+   1. **只加不減**——絕不動已經存在的記錄。要刪就到記錄頁自己刪，
+      在結算頁做「減到比已記還少」等於讓一個順手的畫面可以無聲刪資料。
+   2. 補的每一筆都標 `viaTally`，記錄頁會寫「日結補記」，
+      讓人分得出「當下記的」和「晚上補的」——後者沒有精確時間。
+   3. 只做大便／小便。餵食要克數、喝水要 ml，沒有可信的預設值，
+      在結算頁瞎補只會產生假數字。
+   ============================================================ */
+const Tally = {
+  add:null,          // {poop:n, pee:n}
+  catId:null,
+  open(){
+    const cats = liveCats();
+    if(!cats.length){ toast('請先在「設定」新增貓咪'); return; }
+    this.add = {poop:0, pee:0};
+    this.catId = (UI.selCat && (UI.selCat===UNKNOWN_CAT || cats.some(c=>c.id===UI.selCat)))
+      ? UI.selCat : cats[0].id;
+    this.render();
+    $('#sheetMask').classList.add('show'); document.body.style.overflow='hidden';
+  },
+  pickCat(id){ this.catId=id; this.render(); },
+  bump(type, d){
+    this.add[type] = Math.max(0, Math.min(30, (this.add[type]||0) + d));
+    this.render();
+  },
+  todayCount(type){
+    return liveRecs().filter(r=> r.type===type && r.catId===this.catId
+      && dkey(new Date(r.ts))===todayKey()).length;
+  },
+  total(){ return (this.add.poop||0) + (this.add.pee||0); },
+  row(type){
+    const t = REC_TYPES[type], have = this.todayCount(type), n = this.add[type]||0;
+    return `<div class="tally-row">
+      <span class="qi ico-round" style="background:${t.color};width:30px;height:30px;flex:none" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="#fff">${ICONS[t.icon]}</svg></span>
+      <span class="tally-name">${t.label}<span class="muted" style="font-weight:600">　今天已記 ${have} 次</span></span>
+      <span class="tally-ctrl">
+        <button class="opt sm" onclick="Tally.bump('${type}',-1)" aria-label="少一筆" ${n?'':'disabled'}>−</button>
+        <b class="tally-n">${n}</b>
+        <button class="opt sm" onclick="Tally.bump('${type}',1)" aria-label="多一筆">＋</button>
+      </span>
+    </div>`;
+  },
+  render(){
+    const cats = liveCats(), n = this.total();
+    $('#sheetBody').innerHTML = `
+      <div class="sheet-head"><h2>🌙 今天結算　<span class="muted" style="font-size:13px;font-weight:600">${fmtDateFull(todayKey())}</span></h2>
+        <button class="sheet-close" onclick="Sheet.close()" aria-label="關閉">✕</button></div>
+      ${cats.length>1 ? `<div class="sec"><div class="sec-label">哪一隻貓？</div>
+        ${UI.catBar(this.catId,'Tally.pickCat',{always:true,small:true,withUnknown:true})}</div>`:''}
+      <div class="sec">
+        <div class="sec-label">今天還要補幾筆？</div>
+        ${this.row('poop')}
+        ${this.row('pee')}
+      </div>
+      <p class="hint">補的筆數<b>只會新增，不會動到已經記好的</b>。時間記在現在，並在記錄頁標成「日結補記」——
+        因為那不是當下記的，沒有精確時間。想不起來就讓它空著，硬補一個猜的反而會讓判斷失準。</p>
+      <p class="hint" style="margin-top:-6px">餵食與喝水刻意不放在這裡：它們要克數／毫升，沒有可信的預設值。</p>
+      <div class="sheet-actions">
+        <button class="btn ghost" onclick="Sheet.close()">取消</button>
+        <button class="btn accent lg" onclick="Tally.save()" ${n?'':'disabled'}>✓ 補上 ${n} 筆</button>
+      </div>`;
+  },
+  save(){
+    const n = this.total();
+    if(!n) return;
+    const base = Date.now();
+    let i = 0;
+    for(const type of ['poop','pee']){
+      for(let k=0; k<(this.add[type]||0); k++){
+        const id = uid();
+        NEW_THIS_LOAD.add('record|'+id);
+        const data = type==='poop'
+          ? {status:'normal', score:null, note:'', viaTally:true}
+          : {size:'M', colorAbn:false, note:'', viaTally:true};
+        /* 每筆錯開一分鐘：時間本來就不精確，但至少讓排序穩定、不會整團同一秒 */
+        upsert('record', { id, catId:this.catId, ts:new Date(base - (i++)*60000).toISOString(), type, data });
+      }
+    }
+    Sheet.close();
+    toast(`已補上 ${n} 筆 ✓`);
+    UI.rerender();
+  }
+};
+
 const Backfill = {
   dateKey:null,
   open(){
@@ -2318,6 +2481,18 @@ const Settings = {
       </div>
 
       <div class="card">
+        <h2>${icon('check',18,'var(--accent)')} 點一下就直接記</h2>
+        <p class="hint">開啟時，今日頁的<b>大便／小便</b>點一下就存好（正常／尿塊中、時間現在），
+          不再跳出視窗；畫面下方會出現一列可以「改細節」或「復原」的提示，五秒後自動消失。
+          其他類型要填數字，不受影響。</p>
+        <div class="opt-group">
+          <button class="opt sm ${DB.settings.quickTap!==false?'active':''}" onclick="Settings.setQuickTap(true)">開（點一下就記）</button>
+          <button class="opt sm ${DB.settings.quickTap===false?'active':''}" onclick="Settings.setQuickTap(false)">關（每次都開視窗）</button>
+        </div>
+        <p class="hint" style="margin:10px 0 0">這個開關只存在這台裝置，不會同步給其他照顧者。</p>
+      </div>
+
+      <div class="card">
         <h2>${icon('target',18,'var(--accent)')} 記錄時的快捷數字</h2>
         <p class="hint">記錄時那一排「按一下就填」的按鈕。設一次全部食物共用，<b>不用每個食物都設</b>。</p>
         <div class="row">
@@ -2424,6 +2599,12 @@ const Settings = {
     el.innerHTML =
       (Sync.lastError?`<span style="color:var(--danger);font-weight:700">上次同步失敗：${esc(Sync.lastError)}</span><br>`:'')+
       `待同步 ${PENDING.length} 筆・上次成功：${t?t.toLocaleString('zh-TW',{hour12:false}):'尚未'}`;
+  },
+  setQuickTap(v){
+    DB.settings.quickTap = !!v;
+    saveDB();
+    toast(v ? '已開啟：點一下就直接記' : '已關閉：每次都會開視窗');
+    this.render();
   },
   /* 全域快捷數字。看不懂就擋下來講清楚，不默默丟掉（同食物庫那格的作法）。 */
   saveQuick(){
@@ -3094,12 +3275,32 @@ function registerSW(){
   navigator.serviceWorker.register('sw.js').catch(e=>console.info('SW 未註冊（不影響使用）', e && e.message));
 }
 
+/* ---- ?quick=poop / ?quick=pee：給 iOS 捷徑、NFC 貼紙、桌面書籤用 ----
+   開啟即記一筆，然後**立刻把參數從網址上拿掉**，否則重新整理會重複記。
+   ⚠️ 已知限制：iOS 上「加到主畫面的網頁 App」與「Safari 開同一個網址」的
+   localStorage 是分開的。捷徑的「打開網址」若走 Safari，記到的會是另一份資料。
+   要用這個功能，請先自己實測一次（記一筆，再從主畫面圖示打開看有沒有）。 */
+function handleQuickParam(){
+  let q=null;
+  try{ q = new URLSearchParams(location.search).get('quick'); }catch(e){ return; }
+  if(!q) return;
+  try{ history.replaceState(null,'',location.pathname + location.hash); }catch(e){}
+  if(!Today.QUICK_TAP_TYPES.includes(q)) return;
+  if(!liveCats().length){ toast('請先新增貓咪'); return; }
+  /* 繞過「一鍵直記」的開關：使用者是明確用網址叫它記一筆的 */
+  const saved = DB.settings.quickTap;
+  DB.settings.quickTap = true;
+  Today.tap(q);
+  DB.settings.quickTap = saved;
+}
+
 Theme.init();
 renderBrand();
 loadDB();
 handleSetupLink();
 UI.renderNav();
 UI.go('today');
+handleQuickParam();
 Sync.updatePill();
 Sync.startPolling();
 if(Sync.enabled()) Sync.run();
